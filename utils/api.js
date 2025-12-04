@@ -63,6 +63,45 @@ function request(options) {
     });
   });
 }
+// ==================== 试剂相关 ====================
+
+function getReagentList(params = {}) {
+  return request({
+    url: '/reagents',
+    method: 'GET',
+    data: params
+  });
+}
+
+function getReagentDetail(id) {
+  return request({
+    url: `/reagents/${id}`,
+    method: 'GET'
+  });
+}
+
+function createReagent(data) {
+  return request({
+    url: '/reagents',
+    method: 'POST',
+    data
+  });
+}
+
+function updateReagent(id, data) {
+  return request({
+    url: `/reagents/${id}`,
+    method: 'PUT',
+    data
+  });
+}
+
+function deleteReagent(id) {
+  return request({
+    url: `/reagents/${id}`,
+    method: 'DELETE'
+  });
+}
 
 // ==================== 认证相关 ====================
 
@@ -365,5 +404,11 @@ module.exports = {
   joinGroup,
   removeMember,
   leaveGroup,
-  deleteGroup
+  deleteGroup,
+  // ...原有导出
+  getReagentList,
+  getReagentDetail,
+  createReagent,
+  updateReagent,
+  deleteReagent
 };

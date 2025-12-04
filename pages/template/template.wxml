@@ -1,7 +1,6 @@
 <view class="container">
   <!-- 系统模板 -->
   <view class="section">
-    <view class="section-title">系统预设模板</view>
     <view class="template-list">
       <view 
         class="template-card" 
@@ -39,43 +38,39 @@
       <view class="add-btn" bindtap="goAddTemplate">+ 新建</view>
     </view>
     
-    <view class="template-list" wx:if="{{myTemplates.length > 0}}">
-      <view 
-        class="template-card" 
-        wx:for="{{myTemplates}}" 
+    <view wx:if="{{groupedTemplates.length > 0}}">
+  <view class="section" wx:for="{{groupedTemplates}}" wx:key="type">
+    <view class="type-title">{{item.type}}</view>
+    <view class="template-list">
+      <view
+        class="template-card"
+        wx:for="{{item.list}}"
         wx:key="id"
         bindtap="viewTemplate"
-        data-template="{{item}}"
+        data-template="{{tpl}}"
+        wx:for-item="tpl"
       >
         <view class="template-header">
-          <view class="template-name">{{item.name}}</view>
-          <view class="tag tag-green">自定义</view>
+          <view class="template-name">{{tpl.name}}</view>
         </view>
-        <view class="template-type">{{item.type}}</view>
+        <view class="template-type">{{tpl.type || '未分类'}}</view>
         <view class="template-info">
-          <text class="info-item">📋 {{item.steps.length}} 个步骤</text>
-          <text class="info-item">📅 共 {{item.totalDays}} 天</text>
-        </view>
-        <view class="template-steps">
-          <view class="step-preview" wx:for="{{item.steps}}" wx:for-item="step" wx:key="index" wx:if="{{index < 3}}">
-            <text class="step-day">{{step.dayType === 'day' ? 'D' + step.dayNum : 'H' + step.dayNum}}</text>
-            <text class="step-content">{{step.content}}</text>
-          </view>
-          <view class="step-more" wx:if="{{item.steps.length > 3}}">
-            +{{item.steps.length - 3}} 更多...
-          </view>
+          <text class="info-item">📋 {{tpl.stepsCount}} 个步骤</text>
+          <text class="info-item">📅 共 {{tpl.totalDays}} 天</text>
         </view>
         <view class="template-actions">
-          <text class="action-btn edit" catchtap="editTemplate" data-template="{{item}}">编辑</text>
-          <text class="action-btn delete" catchtap="deleteTemplate" data-id="{{item.id}}">删除</text>
+          <text class="action-btn edit" catchtap="editTemplate" data-template="{{tpl}}">编辑</text>
+          <text class="action-btn delete" catchtap="deleteTemplate" data-id="{{tpl.id}}">删除</text>
         </view>
       </view>
     </view>
+  </view>
+</view>
 
     <view wx:else class="empty-state">
       <text class="empty-icon">📋</text>
       <text class="empty-text">暂无自定义模板</text>
-      <text class="empty-hint">创建常用实验流程模板，快速创建实验</text>
+      <text class="empty-hint">创建一套常用实验步骤，下次一键复用</text>
       <button class="btn-primary" bindtap="goAddTemplate">创建模板</button>
     </view>
   </view>

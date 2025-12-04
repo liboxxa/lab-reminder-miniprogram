@@ -96,7 +96,15 @@ loadData() {
       url: `/pages/experiment/detail/detail?id=${task.experimentId}`
     });
   },
-
+  goReagent() {
+    if (!app.globalData.isLogin) {
+      wx.navigateTo({ url: '/pages/login/login' });
+      return;
+    }
+    wx.navigateTo({
+      url: '/pages/reagent/reagent'
+    });
+  },
   // 跳转到实验详情
   goExperimentDetail(e) {
     const id = e.currentTarget.dataset.id;

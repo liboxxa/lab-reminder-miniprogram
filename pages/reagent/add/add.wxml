@@ -1,0 +1,63 @@
+<view class="container">
+  <view class="card">
+    <view class="form-item">
+      <view class="form-label required">试剂名称</view>
+      <input
+        class="form-input"
+        placeholder="如：LB培养基、IPTG、甲醇"
+        bindinput="onInput"
+        data-field="name"
+        value="{{formData.name}}"
+      />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">描述</view>
+      <textarea
+        class="form-textarea"
+        placeholder="试剂用途、注意事项等（可选）"
+        bindinput="onInput"
+        data-field="description"
+        value="{{formData.description}}"
+      />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">单位</view>
+      <input
+        class="form-input"
+        placeholder="如：mL，g，瓶，支"
+        bindinput="onInput"
+        data-field="unit"
+        value="{{formData.unit}}"
+      />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">库存数量</view>
+      <input
+        class="form-input"
+        type="digit"
+        placeholder="数字，可选"
+        bindinput="onInput"
+        data-field="stockAmount"
+        value="{{formData.stockAmount}}"
+      />
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="form-item row">
+      <view class="form-label">共享给团队</view>
+      <switch
+        checked="{{formData.isShared}}"
+        bindchange="onShareChange"
+        color="#4CAF50"
+      />
+    </view>
+  </view>
+
+  <view class="btn-area">
+    <button class="btn-primary" bindtap="submit">保存</button>
+  </view>
+</view>

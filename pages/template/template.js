@@ -3,37 +3,40 @@ const app = getApp();
 
 Page({
   data: {
-    systemTemplates: [],
-    myTemplates: [],
+    groupedTemplates: [],   // [{ type: '涂布培养', list: [...], ...]
     showDetailModal: false,
     currentTemplate: null
   },
 
-  onLoad() {
-  },
+  onLoad() {},
 
   onShow() {
     this.loadTemplates();
   },
 
-  // 加载模板
   loadTemplates() {
-    if (!app.globalData.isLogin) {
-      return;
-    }
-
     api.getTemplateList().then(res => {
-      const data = res.data;
+      const myTemplates = res.data.myTemplates || [];
+      // 分组
+      const groupMap = {};
+      myTemplates.forEach(t => {
+        const type = t.type || '未分类';
+        if (!groupMap[type]) groupMap[type] = [];
+        groupMap[type].push(t);
+      });
+      const groupedTemplates = Object.keys(groupMap).map(type => ({
+        type,
+        list: groupMap[type]
+      }));
+  
       this.setData({
-        systemTemplates: data.systemTemplates || [],
-        myTemplates: data.myTemplates || []
+        groupedTemplates
       });
     }).catch(err => {
       console.error('获取模板列表失败:', err);
     });
   },
 
-  // 查看模板详情
   viewTemplate(e) {
     const template = e.currentTarget.dataset.template;
     this.setData({
@@ -42,7 +45,6 @@ Page({
     });
   },
 
-  // 关闭详情弹窗
   closeDetailModal() {
     this.setData({
       showDetailModal: false,
@@ -50,7 +52,6 @@ Page({
     });
   },
 
-  // 使用模板创建实验
   useTemplate() {
     const template = this.data.currentTemplate;
     this.closeDetailModal();
@@ -59,18 +60,12 @@ Page({
     });
   },
 
-  // 新建模板
   goAddTemplate() {
-    if (!app.globalData.isLogin) {
-      wx.navigateTo({ url: '/pages/login/login' });
-      return;
-    }
     wx.navigateTo({
       url: '/pages/template/add/add'
     });
   },
 
-  // 编辑模板
   editTemplate(e) {
     const template = e.currentTarget.dataset.template;
     wx.navigateTo({
@@ -78,7 +73,6 @@ Page({
     });
   },
 
-  // 删除模板
   deleteTemplate(e) {
     const id = e.currentTarget.dataset.id;
     wx.showModal({
@@ -91,7 +85,7 @@ Page({
             wx.showToast({ title: '已删除', icon: 'success' });
             this.loadTemplates();
           }).catch(err => {
-            console.error('删除失败:', err);
+            console.error('删除模板失败:', err);
           });
         }
       }

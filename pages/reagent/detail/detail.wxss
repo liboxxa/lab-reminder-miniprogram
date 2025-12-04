@@ -1,0 +1,70 @@
+.container {
+  padding: 20rpx;
+  padding-bottom: 160rpx;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.name {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.info-row {
+  display: flex;
+  padding: 12rpx 0;
+  border-top: 1rpx solid #f5f5f5;
+}
+
+.label {
+  width: 150rpx;
+  font-size: 28rpx;
+  color: #999999;
+}
+
+.value {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background-color: #ffffff;
+  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.05);
+  padding: 20rpx 0;
+}
+
+.bar-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.bar-btn.danger {
+  color: #f44336;
+}
+
+.bar-icon {
+  font-size: 40rpx;
+  margin-bottom: 8rpx;
+}

@@ -1,0 +1,51 @@
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <input class="search-input" placeholder="搜索试剂名称" bindinput="onSearch" />
+  </view>
+
+  <!-- 标签切换：全部 / 我的 / 共享 -->
+  <view class="filter-tabs">
+    <view class="tab {{currentTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
+    <view class="tab {{currentTab === 'mine' ? 'active' : ''}}" bindtap="switchTab" data-tab="mine">我的</view>
+    <view class="tab {{currentTab === 'shared' ? 'active' : ''}}" bindtap="switchTab" data-tab="shared">共享</view>
+  </view>
+
+  <!-- 试剂列表 -->
+  <view class="reagent-list">
+    <view wx:if="{{reagentList.length > 0}}">
+      <view class="reagent-item card" wx:for="{{reagentList}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
+        <view class="reagent-header">
+          <view class="reagent-name">{{item.name}}</view>
+          <view class="tag {{item.isShared ? 'tag-blue' : 'tag-green'}}">
+            {{item.isShared ? '共享' : '私有'}}
+          </view>
+        </view>
+        <view class="reagent-info">
+          <view class="info-item" wx:if="{{item.unit}}">
+            <text class="info-label">单位：</text>
+            <text class="info-value">{{item.unit}}</text>
+          </view>
+          <view class="info-item" wx:if="{{item.stockAmount}}">
+            <text class="info-label">库存：</text>
+            <text class="info-value">{{item.stockAmount}}{{item.unit}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">创建时间：</text>
+            <text class="info-value">{{item.createdAt}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="empty-state">
+      <text class="empty-text">暂无试剂记录</text>
+      <view class="btn-primary" style="margin-top: 30rpx;" bindtap="goAdd">添加试剂</view>
+    </view>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="float-btn" bindtap="goAdd">
+    <text>+</text>
+  </view>
+</view>

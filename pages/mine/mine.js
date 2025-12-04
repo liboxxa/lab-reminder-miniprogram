@@ -129,7 +129,15 @@ Page({
       url: '/pages/template/template'
     });
   },
-
+  goReagent() {
+    if (!this.data.userInfo.id) {
+      wx.navigateTo({ url: '/pages/login/login' });
+      return;
+    }
+    wx.navigateTo({
+      url: '/pages/reagent/reagent'
+    });
+  },
   // 数据导出
   goExport() {
     wx.showToast({
@@ -142,7 +150,7 @@ Page({
   showAbout() {
     wx.showModal({
       title: '实验提醒助手',
-      content: '版本 1.0.0\n帮助科研人员管理实验进程\n\n开发：实验室团队',
+      content: '版本 1.1.1\n帮助科研人员管理实验进程\n\n开发：实验室团队',
       showCancel: false
     });
   },

@@ -64,6 +64,10 @@
       <text class="action-icon">📋</text>
       <text class="action-text">模板管理</text>
     </view>
+    <view class="action-btn" bindtap="goReagent">
+      <text class="action-icon">🧴</text>
+      <text class="action-text">试剂管理</text>
+    </view>
     <view class="action-btn" bindtap="goGroup">
       <text class="action-icon">👥</text>
       <text class="action-text">我的团队</text>

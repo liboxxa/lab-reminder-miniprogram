@@ -1,0 +1,40 @@
+<view class="container">
+  <view class="card">
+    <view class="header">
+      <view class="name">{{reagent.name}}</view>
+      <view class="tag {{reagent.isShared ? 'tag-blue' : 'tag-green'}}">
+        {{reagent.isShared ? '共享' : '私有'}}
+      </view>
+    </view>
+
+    <view class="info-row" wx:if="{{reagent.description}}">
+      <text class="label">描述</text>
+      <text class="value">{{reagent.description}}</text>
+    </view>
+    <view class="info-row" wx:if="{{reagent.unit}}">
+      <text class="label">单位</text>
+      <text class="value">{{reagent.unit}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">库存</text>
+      <text class="value">
+        {{reagent.stockAmount ? reagent.stockAmount + (reagent.unit || '') : '未填写'}}
+      </text>
+    </view>
+    <view class="info-row">
+      <text class="label">创建时间</text>
+      <text class="value">{{reagent.createdAt}}</text>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="bar-btn" bindtap="editReagent">
+      <text class="bar-icon">✏️</text>
+      <text>编辑</text>
+    </view>
+    <view class="bar-btn danger" bindtap="deleteReagent">
+      <text class="bar-icon">🗑️</text>
+      <text>删除</text>
+    </view>
+  </view>
+</view>

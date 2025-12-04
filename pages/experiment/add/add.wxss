@@ -1,6 +1,8 @@
+/* 整体容器 */
 .container {
   padding: 20rpx;
   padding-bottom: 160rpx;
+  box-sizing: border-box;
 }
 
 /* 步骤指示器 */
@@ -21,16 +23,17 @@
 }
 
 .step-num {
-  width: 50rpx;
-  height: 50rpx;
-  border-radius: 50%;
-  background-color: #e0e0e0;
+  width:50rpx;          /* 宽度放大一点 */
+  height: 50rpx;         /* 高度和宽度一致，保持正圆 */
+  border-radius: 50%;    /* 圆形 */
+  background-color: #ffffff;
   color: #999999;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26rpx;
+  font-size: 24rpx;      /* 字体稍微小一点 */
   margin-bottom: 8rpx;
+  white-space: nowrap;   /* 关键：不换行 */
 }
 
 .step.active .step-num {
@@ -39,7 +42,7 @@
 }
 
 .step-text {
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #999999;
 }
 
@@ -53,13 +56,28 @@
   background-color: #e0e0e0;
   margin: 0 10rpx;
   margin-bottom: 30rpx;
+  border-radius: 2rpx;
 }
 
 .step-line.active {
   background-color: #4CAF50;
 }
 
-/* 表单样式 */
+/* 步骤内容区域 */
+.step-content {
+  margin-bottom: 20rpx;
+}
+
+/* 卡片样式 */
+.card {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 20rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+/* 表单项 */
 .form-item {
   padding: 24rpx 0;
   border-bottom: 1rpx solid #f0f0f0;
@@ -91,6 +109,7 @@
   margin-bottom: 0;
 }
 
+/* 输入框 / 文本域 */
 .form-input {
   width: 100%;
   height: 80rpx;
@@ -121,20 +140,31 @@
   color: #666666;
 }
 
-/* 类型标签 */
+/* 类型推荐标签 */
+.type-suggestions {
+  margin-top: 12rpx;
+}
+
+.hint-text {
+  font-size: 24rpx;
+  color: #999999;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
 .type-tags {
   display: flex;
   flex-wrap: wrap;
 }
 
 .type-tag {
-  padding: 16rpx 32rpx;
+  padding: 12rpx 24rpx;
   background-color: #f5f5f5;
   border-radius: 8rpx;
   font-size: 26rpx;
   color: #666666;
   margin-right: 16rpx;
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
 }
 
 .type-tag.active {
@@ -150,37 +180,21 @@
 }
 
 .template-item {
-  display: flex;
-  flex-direction: column;
-  padding: 24rpx;
+  position: relative;
   background-color: #f8f8f8;
   border-radius: 12rpx;
+  padding: 20rpx;
   margin-bottom: 16rpx;
-  position: relative;
   border: 2rpx solid transparent;
 }
 
 .template-item.active {
-  background-color: #e8f5e9;
   border-color: #4CAF50;
-}
-
-.template-item.add {
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  color: #4CAF50;
-  border: 2rpx dashed #4CAF50;
-  background-color: #ffffff;
-}
-
-.add-icon {
-  font-size: 36rpx;
-  margin-right: 8rpx;
+  background-color: #e8f5e9;
 }
 
 .template-name {
-  font-size: 28rpx;
+  font-size: 30rpx;
   color: #333333;
   margin-bottom: 8rpx;
 }
@@ -192,173 +206,35 @@
 
 .template-check {
   position: absolute;
-  right: 24rpx;
+  right: 20rpx;
   top: 50%;
   transform: translateY(-50%);
   width: 40rpx;
   height: 40rpx;
-  background-color: #4CAF50;
-  color: #ffffff;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24rpx;
-}
-
-/* 菌种选择 */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20rpx;
-}
-
-.add-btn {
-  font-size: 26rpx;
-  color: #4CAF50;
-}
-
-.strain-select-list {
-  border-top: 1rpx solid #f0f0f0;
-}
-
-.strain-select-item {
-  display: flex;
-  align-items: center;
-  padding: 24rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
-}
-
-.strain-select-item:last-child {
-  border-bottom: none;
-}
-
-.strain-checkbox {
-  width: 44rpx;
-  height: 44rpx;
-  border: 2rpx solid #cccccc;
-  border-radius: 8rpx;
-  margin-right: 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28rpx;
-  color: #ffffff;
-}
-
-.strain-select-item.selected .strain-checkbox {
   background-color: #4CAF50;
-  border-color: #4CAF50;
-}
-
-.strain-info {
-  flex: 1;
-}
-
-.strain-name {
-  font-size: 28rpx;
-  color: #333333;
-}
-
-.strain-meta {
-  font-size: 24rpx;
-  color: #999999;
-  margin-top: 8rpx;
-}
-
-.selected-strains {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 16rpx;
-}
-
-.selected-tag {
+  color: #ffffff;
   display: flex;
   align-items: center;
-  padding: 12rpx 20rpx;
-  background-color: #e8f5e9;
-  border-radius: 8rpx;
-  font-size: 26rpx;
-  color: #4CAF50;
-  margin-right: 16rpx;
-  margin-bottom: 16rpx;
-}
-
-.remove-tag {
-  margin-left: 12rpx;
-  font-size: 28rpx;
-}
-
-/* 提醒计划 */
-.reminder-list {
-  border-top: 1rpx solid #f0f0f0;
-}
-
-.reminder-item {
-  padding: 24rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
-}
-
-.reminder-item:last-child {
-  border-bottom: none;
-}
-
-.reminder-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12rpx;
-}
-
-.reminder-day {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #4CAF50;
-}
-
-.reminder-actions {
-  display: flex;
-}
-
-.edit-btn {
+  justify-content: center;
   font-size: 24rpx;
-  color: #4CAF50;
-  margin-right: 20rpx;
-}
-
-.delete-btn {
-  font-size: 24rpx;
-  color: #f44336;
-}
-
-.reminder-content {
-  font-size: 28rpx;
-  color: #333333;
-  margin-bottom: 12rpx;
-}
-
-.reminder-meta {
-  display: flex;
-  align-items: center;
-  font-size: 24rpx;
-  color: #999999;
-}
-
-.reminder-time {
-  margin-right: 20rpx;
-}
-
-.reminder-photo {
-  color: #ff9800;
 }
 
 /* 空状态 */
-.empty-state.small {
-  padding: 40rpx;
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 60rpx 40rpx;
+}
+
+.empty-state.small {
+  padding: 40rpx 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999999;
 }
 
 .empty-hint {
@@ -367,7 +243,71 @@
   margin-top: 8rpx;
 }
 
-/* 底部按钮 */
+/* 实验步骤卡片 */
+.step-card {
+  background-color: #ffffff;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.03);
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.step-num {
+  font-size: 26rpx;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.step-actions {
+  display: flex;
+}
+
+.action-btn {
+  font-size: 24rpx;
+  color: #4CAF50;
+  margin-left: 20rpx;
+}
+
+.action-btn.delete {
+  color: #f44336;
+}
+
+.step-body {
+  padding-left: 4rpx;
+}
+
+.step-name {
+  font-size: 30rpx;
+  color: #333333;
+  margin-bottom: 6rpx;
+}
+
+.step-time {
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 4rpx;
+}
+
+.step-clock {
+  font-size: 24rpx;
+  color: #999999;
+  margin-left: 16rpx;
+}
+
+.step-reagent {
+  font-size: 24rpx;
+  color: #999999;
+  margin-top: 4rpx;
+}
+
+/* 底部按钮区域 */
 .bottom-btns {
   position: fixed;
   bottom: 0;
@@ -384,21 +324,23 @@
   height: 88rpx;
   line-height: 88rpx;
   border-radius: 44rpx;
-  font-size: 32rpx;
+  font-size: 30rpx;
   margin: 0 10rpx;
-}
-
-.btn-secondary {
-  background-color: #f5f5f5;
-  color: #666666;
 }
 
 .btn-primary {
   background-color: #4CAF50;
   color: #ffffff;
+  border: none;
 }
 
-/* 弹窗样式 */
+.btn-secondary {
+  background-color: #f5f5f5;
+  color: #666666;
+  border: none;
+}
+
+/* 弹窗遮罩 */
 .modal-mask {
   position: fixed;
   top: 0;
@@ -409,44 +351,48 @@
   z-index: 100;
 }
 
+/* 弹窗主体 */
 .modal-content {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  max-height: 80vh;
   background-color: #ffffff;
   border-radius: 24rpx 24rpx 0 0;
   z-index: 101;
-  max-height: 80vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 30rpx;
+  padding: 24rpx 30rpx;
   border-bottom: 1rpx solid #f0f0f0;
 }
 
 .modal-title {
   font-size: 32rpx;
   font-weight: bold;
+  color: #333333;
 }
 
 .modal-close {
-  font-size: 48rpx;
+  font-size: 40rpx;
   color: #999999;
   line-height: 1;
 }
 
 .modal-body {
-  padding: 30rpx;
+  padding: 20rpx 30rpx;
+  overflow-y: auto;
 }
 
 .modal-footer {
   display: flex;
-  padding: 20rpx 30rpx 40rpx;
+  padding: 20rpx 30rpx 30rpx;
 }
 
 .modal-btn {
@@ -456,6 +402,7 @@
   border-radius: 40rpx;
   font-size: 30rpx;
   margin: 0 10rpx;
+  border: none;
 }
 
 .modal-btn.cancel {
