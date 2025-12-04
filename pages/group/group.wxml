@@ -1,0 +1,97 @@
+<view class="container">
+  <!-- 我的团队列表 -->
+  <view class="section" wx:if="{{groupList.length > 0}}">
+    <view class="section-title">我加入的团队</view>
+    <view class="group-list">
+      <view 
+        class="group-card" 
+        wx:for="{{groupList}}" 
+        wx:key="id"
+        bindtap="goGroupDetail"
+        data-group="{{item}}"
+      >
+        <view class="group-avatar">{{item.name[0]}}</view>
+        <view class="group-info">
+          <view class="group-name">{{item.name}}</view>
+          <view class="group-meta">
+            <text class="member-count">{{item.memberCount}} 名成员</text>
+            <text class="role-tag" wx:if="{{item.role === 'admin'}}">管理员</text>
+          </view>
+        </view>
+        <view class="arrow">›</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:else class="empty-state">
+    <text class="empty-icon">👥</text>
+    <text class="empty-text">您还没有加入任何团队</text>
+    <text class="empty-hint">创建或加入团队，与成员共享实验数据</text>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-area">
+    <button class="btn-primary" bindtap="createGroup">创建团队</button>
+    <button class="btn-secondary" bindtap="joinGroup">加入团队</button>
+  </view>
+</view>
+
+<!-- 创建团队弹窗 -->
+<view class="modal-mask" wx:if="{{showCreateModal}}" bindtap="closeCreateModal"></view>
+<view class="modal-content" wx:if="{{showCreateModal}}">
+  <view class="modal-header">
+    <text class="modal-title">创建团队</text>
+    <text class="modal-close" bindtap="closeCreateModal">×</text>
+  </view>
+  <view class="modal-body">
+    <view class="form-item">
+      <view class="form-label required">团队名称</view>
+      <input 
+        class="form-input" 
+        placeholder="如：张老师课题组" 
+        bindinput="onGroupNameInput"
+        value="{{newGroup.name}}"
+      />
+    </view>
+    <view class="form-item">
+      <view class="form-label">团队描述</view>
+      <textarea 
+        class="form-textarea" 
+        placeholder="团队简介（可选）"
+        bindinput="onGroupDescInput"
+        value="{{newGroup.description}}"
+      />
+    </view>
+  </view>
+  <view class="modal-footer">
+    <button class="modal-btn cancel" bindtap="closeCreateModal">取消</button>
+    <button class="modal-btn confirm" bindtap="submitCreateGroup">创建</button>
+  </view>
+</view>
+
+<!-- 加入团队弹窗 -->
+<view class="modal-mask" wx:if="{{showJoinModal}}" bindtap="closeJoinModal"></view>
+<view class="modal-content" wx:if="{{showJoinModal}}">
+  <view class="modal-header">
+    <text class="modal-title">加入团队</text>
+    <text class="modal-close" bindtap="closeJoinModal">×</text>
+  </view>
+  <view class="modal-body">
+    <view class="form-item">
+      <view class="form-label required">团队邀请码</view>
+      <input 
+        class="form-input" 
+        placeholder="请输入6位邀请码" 
+        maxlength="6"
+        bindinput="onInviteCodeInput"
+        value="{{inviteCode}}"
+      />
+    </view>
+    <view class="hint-text">请向团队管理员获取邀请码</view>
+  </view>
+  <view class="modal-footer">
+    <button class="modal-btn cancel" bindtap="closeJoinModal">取消</button>
+    <button class="modal-btn confirm" bindtap="submitJoinGroup">加入</button>
+  </view>
+</view>

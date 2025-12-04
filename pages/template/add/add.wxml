@@ -1,0 +1,143 @@
+<view class="container">
+  <view class="card">
+    <!-- 模板名称 -->
+    <view class="form-item">
+      <view class="form-label required">模板名称</view>
+      <input 
+        class="form-input" 
+        placeholder="如：涂布培养（我的流程）" 
+        bindinput="onInput"
+        data-field="name"
+        value="{{formData.name}}"
+      />
+    </view>
+
+    <!-- 实验类型 -->
+    <view class="form-item">
+      <view class="form-label required">实验类型</view>
+      <view class="type-tags">
+        <view 
+          class="type-tag {{formData.type === item ? 'active' : ''}}" 
+          wx:for="{{experimentTypes}}" 
+          wx:key="*this"
+          bindtap="selectType"
+          data-type="{{item}}"
+        >{{item}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 步骤列表 -->
+  <view class="card">
+    <view class="section-header">
+      <view class="section-title">实验步骤</view>
+      <view class="add-btn" bindtap="addStep">+ 添加步骤</view>
+    </view>
+
+    <view class="step-list" wx:if="{{formData.steps.length > 0}}">
+      <view class="step-card" wx:for="{{formData.steps}}" wx:key="index">
+        <view class="step-header">
+          <view class="step-num">步骤 {{index + 1}}</view>
+          <view class="step-actions">
+            <text class="action-btn" catchtap="editStep" data-index="{{index}}">编辑</text>
+            <text class="action-btn delete" catchtap="deleteStep" data-index="{{index}}">删除</text>
+          </view>
+        </view>
+        <view class="step-body">
+          <view class="step-time-row">
+            <text class="step-time">{{item.dayType === 'day' ? '第 ' + item.dayNum + ' 天' : '第 ' + item.dayNum + ' 小时'}}</text>
+            <text class="step-clock" wx:if="{{item.time}}">{{item.time}}</text>
+          </view>
+          <view class="step-content">{{item.content}}</view>
+          <view class="step-tags" wx:if="{{item.needPhoto}}">
+            <text class="mini-tag">📷 需要拍照</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="empty-state small">
+      <text class="empty-text">暂无步骤</text>
+      <text class="empty-hint">点击上方"添加步骤"开始创建</text>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="btn-area">
+    <button class="btn-primary" bindtap="submit">保存模板</button>
+  </view>
+</view>
+
+<!-- 添加/编辑步骤弹窗 -->
+<view class="modal-mask" wx:if="{{showStepModal}}" bindtap="closeStepModal"></view>
+<view class="modal-content" wx:if="{{showStepModal}}">
+  <view class="modal-header">
+    <text class="modal-title">{{editingStepIndex >= 0 ? '编辑步骤' : '添加步骤'}}</text>
+    <text class="modal-close" bindtap="closeStepModal">×</text>
+  </view>
+  <view class="modal-body">
+    <!-- 时间类型 -->
+    <view class="form-item">
+      <view class="form-label">时间类型</view>
+      <view class="type-tags">
+        <view 
+          class="type-tag {{newStep.dayType === 'day' ? 'active' : ''}}"
+          bindtap="setDayType"
+          data-type="day"
+        >按天</view>
+        <view 
+          class="type-tag {{newStep.dayType === 'hour' ? 'active' : ''}}"
+          bindtap="setDayType"
+          data-type="hour"
+        >按小时</view>
+      </view>
+    </view>
+
+    <!-- 第几天/小时 -->
+    <view class="form-item">
+      <view class="form-label required">{{newStep.dayType === 'day' ? '第几天' : '第几小时'}}</view>
+      <input 
+        class="form-input" 
+        type="number" 
+        placeholder="{{newStep.dayType === 'day' ? '如：0（当天）、3（第3天）' : '如：24（24小时后）'}}"
+        bindinput="onStepInput"
+        data-field="dayNum"
+        value="{{newStep.dayNum}}"
+      />
+    </view>
+
+    <!-- 提醒时间 -->
+    <view class="form-item" wx:if="{{newStep.dayType === 'day'}}">
+      <view class="form-label">提醒时间</view>
+      <picker mode="time" value="{{newStep.time}}" bindchange="onTimeChange">
+        <view class="picker-value">{{newStep.time}} ›</view>
+      </picker>
+    </view>
+
+    <!-- 步骤内容 -->
+    <view class="form-item">
+      <view class="form-label required">步骤内容</view>
+      <textarea 
+        class="form-textarea" 
+        placeholder="如：检查涂布情况，准备划线"
+        bindinput="onStepInput"
+        data-field="content"
+        value="{{newStep.content}}"
+      />
+    </view>
+
+    <!-- 是否需要拍照 -->
+    <view class="form-item row">
+      <view class="form-label">需要拍照</view>
+      <switch 
+        checked="{{newStep.needPhoto}}" 
+        bindchange="onNeedPhotoChange"
+        color="#4CAF50"
+      />
+    </view>
+  </view>
+  <view class="modal-footer">
+    <button class="modal-btn cancel" bindtap="closeStepModal">取消</button>
+    <button class="modal-btn confirm" bindtap="saveStep">保存</button>
+  </view>
+</view>

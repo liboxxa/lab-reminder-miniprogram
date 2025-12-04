@@ -1,0 +1,72 @@
+<view class="container">
+  <!-- 今日日期 -->
+  <view class="date-header">
+    <text class="date-text">{{currentDate}}</text>
+    <text class="week-text">{{weekDay}}</text>
+  </view>
+
+  <!-- 今日待办 -->
+  <view class="card">
+    <view class="section-title">今日待办 ({{todayTasks.length}})</view>
+    
+    <view wx:if="{{todayTasks.length > 0}}">
+      <view class="task-item" wx:for="{{todayTasks}}" wx:key="id" bindtap="goTaskDetail" data-task="{{item}}">
+        <view class="task-status {{item.status === 'done' ? 'done' : ''}}">
+          <text wx:if="{{item.status === 'done'}}">✓</text>
+        </view>
+        <view class="task-content">
+          <view class="task-title">{{item.title}}</view>
+          <view class="task-desc">{{item.experimentName}} · {{item.strainName}}</view>
+        </view>
+        <view class="task-time">{{item.time}}</view>
+      </view>
+    </view>
+    
+    <view wx:else class="empty-state">
+      <text class="empty-text">今天没有待办事项 🎉</text>
+    </view>
+  </view>
+
+  <!-- 进行中的实验 -->
+  <view class="card">
+    <view class="section-title">进行中的实验 ({{ongoingExperiments.length}})</view>
+    
+    <view wx:if="{{ongoingExperiments.length > 0}}">
+      <view class="experiment-item" wx:for="{{ongoingExperiments}}" wx:key="id" bindtap="goExperimentDetail" data-id="{{item.id}}">
+        <view class="experiment-info">
+          <view class="experiment-name">{{item.name}}</view>
+          <view class="experiment-meta">
+            <text class="tag tag-green">Day {{item.currentDay}}</text>
+            <text class="experiment-date">开始于 {{item.startDate}}</text>
+          </view>
+        </view>
+        <view class="arrow">›</view>
+      </view>
+    </view>
+    
+    <view wx:else class="empty-state">
+      <text class="empty-text">暂无进行中的实验</text>
+      <view class="btn-primary" style="margin-top: 30rpx;" bindtap="goAddExperiment">创建实验</view>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="quick-actions">
+    <view class="action-btn" bindtap="goAddExperiment">
+      <text class="action-icon">🧪</text>
+      <text class="action-text">新建实验</text>
+    </view>
+    <view class="action-btn" bindtap="goAddStrain">
+      <text class="action-icon">🧫</text>
+      <text class="action-text">新建菌种</text>
+    </view>
+    <view class="action-btn" bindtap="goTemplate">
+      <text class="action-icon">📋</text>
+      <text class="action-text">模板管理</text>
+    </view>
+    <view class="action-btn" bindtap="goGroup">
+      <text class="action-icon">👥</text>
+      <text class="action-text">我的团队</text>
+    </view>
+  </view>
+</view>

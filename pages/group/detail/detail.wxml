@@ -1,0 +1,80 @@
+<view class="container">
+  <!-- 团队信息 -->
+  <view class="card">
+    <view class="group-header">
+      <view class="group-avatar">{{groupInfo.name[0]}}</view>
+      <view class="group-info">
+        <view class="group-name">{{groupInfo.name}}</view>
+        <view class="group-desc" wx:if="{{groupInfo.description}}">{{groupInfo.description}}</view>
+      </view>
+    </view>
+    
+    <view class="info-row">
+      <text class="info-label">邀请码</text>
+      <view class="info-value invite-code" bindtap="copyInviteCode">
+        <text>{{groupInfo.inviteCode}}</text>
+        <text class="copy-btn">复制</text>
+      </view>
+    </view>
+    
+    <view class="info-row">
+      <text class="info-label">创建时间</text>
+      <text class="info-value">{{groupInfo.createdAt}}</text>
+    </view>
+  </view>
+
+  <!-- 成员列表 -->
+  <view class="card">
+    <view class="section-header">
+      <view class="section-title">团队成员 ({{groupInfo.members.length}})</view>
+      <view class="add-btn" wx:if="{{isAdmin}}" bindtap="shareInviteCode">邀请成员</view>
+    </view>
+
+    <view class="member-list">
+      <view class="member-item" wx:for="{{groupInfo.members}}" wx:key="userId">
+        <view class="member-avatar-placeholder" wx:if="{{!item.avatar}}">
+          <text>{{item.nickname[0]}}</text>
+        </view>
+        <image class="member-avatar" wx:else src="{{item.avatar}}" mode="aspectFill" />
+        <view class="member-info">
+          <view class="member-name">{{item.nickname}}</view>
+          <view class="member-role">{{item.role === 'admin' ? '管理员' : '成员'}}</view>
+        </view>
+        <view class="member-actions" wx:if="{{isAdmin && item.role !== 'admin'}}">
+          <text class="action-btn delete" catchtap="removeMember" data-user-id="{{item.userId}}">移除</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 共享的实验 -->
+  <view class="card">
+    <view class="section-title">共享的实验 ({{sharedExperiments.length}})</view>
+    
+    <view wx:if="{{sharedExperiments.length > 0}}" class="experiment-list">
+      <view 
+        class="experiment-item" 
+        wx:for="{{sharedExperiments}}" 
+        wx:key="id"
+        bindtap="goExperimentDetail"
+        data-id="{{item.id}}"
+      >
+        <view class="experiment-info">
+          <view class="experiment-name">{{item.name}}</view>
+          <view class="experiment-meta">{{item.type}} · 第{{item.currentDay}}天</view>
+        </view>
+        <view class="arrow">›</view>
+      </view>
+    </view>
+
+    <view wx:else class="empty-state small">
+      <text class="empty-text">暂无共享实验</text>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-area">
+    <button class="btn-danger" wx:if="{{!isAdmin}}" bindtap="leaveGroup">退出团队</button>
+    <button class="btn-danger" wx:else bindtap="deleteGroup">解散团队</button>
+  </view>
+</view>

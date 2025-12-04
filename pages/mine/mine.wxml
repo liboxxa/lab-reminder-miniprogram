@@ -1,0 +1,71 @@
+<view class="container">
+  <!-- 用户信息 -->
+  <view class="user-card card">
+    <image class="avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+    <view class="user-info">
+      <view class="nickname">{{userInfo.nickname || '点击登录'}}</view>
+      <view class="user-id" wx:if="{{userInfo.id}}">ID: {{userInfo.id}}</view>
+    </view>
+    <view class="edit-btn" bindtap="editProfile" wx:if="{{userInfo.id}}">编辑</view>
+    <view class="login-btn" bindtap="goLogin" wx:else>登录</view>
+  </view>
+
+  <!-- 提醒设置 -->
+  <view class="card">
+    <view class="section-title">提醒设置</view>
+    <view class="setting-item">
+      <text class="setting-label">默认提醒时间</text>
+      <picker mode="time" value="{{settings.defaultRemindTime}}" bindchange="onTimeChange">
+        <view class="setting-value">{{settings.defaultRemindTime}} ›</view>
+      </picker>
+    </view>
+    <view class="setting-item">
+      <text class="setting-label">重复提醒间隔</text>
+      <picker range="{{intervalOptions}}" range-key="label" value="{{settings.intervalIndex}}" bindchange="onIntervalChange">
+        <view class="setting-value">{{intervalOptions[settings.intervalIndex].label}} ›</view>
+      </picker>
+    </view>
+    <view class="setting-item">
+      <text class="setting-label">最大提醒次数</text>
+      <picker range="{{maxRepeatOptions}}" value="{{settings.maxRepeatIndex}}" bindchange="onMaxRepeatChange">
+        <view class="setting-value">{{maxRepeatOptions[settings.maxRepeatIndex]}} 次 ›</view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 功能列表 -->
+  <view class="card">
+    <view class="menu-item" bindtap="goGroup">
+      <text class="menu-icon">👥</text>
+      <text class="menu-text">我的团队</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goTemplate">
+      <text class="menu-icon">📋</text>
+      <text class="menu-text">模板管理</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goExport">
+      <text class="menu-icon">📤</text>
+      <text class="menu-text">数据导出</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 其他 -->
+  <view class="card">
+    <view class="menu-item" bindtap="showAbout">
+      <text class="menu-icon">ℹ️</text>
+      <text class="menu-text">关于我们</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="feedback">
+      <text class="menu-icon">💬</text>
+      <text class="menu-text">意见反馈</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-btn" bindtap="logout" wx:if="{{userInfo.id}}">退出登录</view>
+</view>

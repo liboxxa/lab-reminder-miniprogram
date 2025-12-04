@@ -1,0 +1,57 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/strain/strain",
+    "pages/experiment/experiment",
+    "pages/mine/mine",
+    "pages/login/login",
+    "pages/strain/add/add",
+    "pages/strain/detail/detail",
+    "pages/experiment/add/add",
+    "pages/experiment/detail/detail",
+    "pages/template/template",
+    "pages/template/add/add",
+    "pages/group/group",
+    "pages/group/detail/detail"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#4CAF50",
+    "navigationBarTitleText": "实验提醒助手",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#4CAF50",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/tab/home.png",
+        "selectedIconPath": "images/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/strain/strain",
+        "text": "菌种",
+        "iconPath": "images/tab/strain.png",
+        "selectedIconPath": "images/tab/strain-active.png"
+      },
+      {
+        "pagePath": "pages/experiment/experiment",
+        "text": "实验",
+        "iconPath": "images/tab/experiment.png",
+        "selectedIconPath": "images/tab/experiment-active.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "iconPath": "images/tab/mine.png",
+        "selectedIconPath": "images/tab/mine-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

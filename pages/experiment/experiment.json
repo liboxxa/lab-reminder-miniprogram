@@ -1,0 +1,6 @@
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "实验档案",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

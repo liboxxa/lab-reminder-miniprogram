@@ -1,0 +1,47 @@
+<view class="container">
+  <!-- 筛选标签 -->
+  <view class="filter-tabs">
+    <view class="tab {{currentTab === 'ongoing' ? 'active' : ''}}" bindtap="switchTab" data-tab="ongoing">进行中</view>
+    <view class="tab {{currentTab === 'completed' ? 'active' : ''}}" bindtap="switchTab" data-tab="completed">已完成</view>
+    <view class="tab {{currentTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
+  </view>
+
+  <!-- 实验列表 -->
+  <view class="experiment-list">
+    <view wx:if="{{experimentList.length > 0}}">
+      <view class="experiment-item card" wx:for="{{experimentList}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
+        <view class="experiment-header">
+          <view class="experiment-name">{{item.name}}</view>
+          <view class="tag {{item.status === 'ongoing' ? 'tag-green' : 'tag-blue'}}">
+            {{item.status === 'ongoing' ? '进行中' : '已完成'}}
+          </view>
+        </view>
+        <view class="experiment-type">{{item.type}}</view>
+        <view class="experiment-info">
+          <view class="info-row">
+            <text class="info-label">开始日期：</text>
+            <text class="info-value">{{item.startDate}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">当前进度：</text>
+            <text class="info-value primary-color">第 {{item.currentDay}} 天</text>
+          </view>
+          <view class="info-row" wx:if="{{item.strainNames}}">
+            <text class="info-label">使用菌种：</text>
+            <text class="info-value">{{item.strainNames}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="empty-state">
+      <text class="empty-text">暂无实验记录</text>
+      <view class="btn-primary" style="margin-top: 30rpx;" bindtap="goAdd">创建实验</view>
+    </view>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="float-btn" bindtap="goAdd">
+    <text>+</text>
+  </view>
+</view>

@@ -1,0 +1,272 @@
+<view class="container">
+  <!-- 步骤指示器 -->
+  <view class="steps">
+    <view class="step {{currentStep >= 1 ? 'active' : ''}}">
+      <view class="step-num">1</view>
+      <text class="step-text">基本信息</text>
+    </view>
+    <view class="step-line {{currentStep >= 2 ? 'active' : ''}}"></view>
+    <view class="step {{currentStep >= 2 ? 'active' : ''}}">
+      <view class="step-num">2</view>
+      <text class="step-text">选择菌种</text>
+    </view>
+    <view class="step-line {{currentStep >= 3 ? 'active' : ''}}"></view>
+    <view class="step {{currentStep >= 3 ? 'active' : ''}}">
+      <view class="step-num">3</view>
+      <text class="step-text">提醒计划</text>
+    </view>
+  </view>
+
+  <!-- 步骤1：基本信息 -->
+  <view class="step-content" wx:if="{{currentStep === 1}}">
+    <view class="card">
+      <view class="form-item">
+        <view class="form-label required">实验名称</view>
+        <input 
+          class="form-input" 
+          placeholder="如：涂布培养-001" 
+          bindinput="onInput"
+          data-field="name"
+          value="{{formData.name}}"
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="form-label required">实验类型</view>
+        <view class="type-tags">
+          <view 
+            class="type-tag {{formData.type === item ? 'active' : ''}}" 
+            wx:for="{{experimentTypes}}" 
+            wx:key="*this"
+            bindtap="selectType"
+            data-type="{{item}}"
+          >{{item}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">选择模板</view>
+        <view class="template-list">
+          <view 
+            class="template-item {{formData.templateId === item.id ? 'active' : ''}}"
+            wx:for="{{templateList}}"
+            wx:key="id"
+            bindtap="selectTemplate"
+            data-template="{{item}}"
+          >
+            <view class="template-name">{{item.name}}</view>
+            <view class="template-desc">{{item.stepsCount}}个步骤 · {{item.totalDays}}天</view>
+            <view class="template-check" wx:if="{{formData.templateId === item.id}}">✓</view>
+          </view>
+          <view class="template-item add" bindtap="goAddTemplate">
+            <text class="add-icon">+</text>
+            <text>自定义模板</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label required">开始日期</view>
+        <picker mode="date" value="{{formData.startDate}}" bindchange="onDateChange">
+          <view class="picker-value">{{formData.startDate || '请选择日期'}} ›</view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">实验描述</view>
+        <textarea 
+          class="form-textarea" 
+          placeholder="实验目的、备注等（可选）"
+          bindinput="onInput"
+          data-field="description"
+          value="{{formData.description}}"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 步骤2：选择菌种 -->
+  <view class="step-content" wx:if="{{currentStep === 2}}">
+    <view class="card">
+      <view class="section-header">
+        <view class="section-title">选择使用的菌种</view>
+        <view class="add-btn" bindtap="goAddStrain">+ 新建菌种</view>
+      </view>
+
+      <view class="strain-select-list" wx:if="{{strainList.length > 0}}">
+        <view 
+          class="strain-select-item {{selectedStrains.includes(item.id) ? 'selected' : ''}}"
+          wx:for="{{strainList}}"
+          wx:key="id"
+          bindtap="toggleStrain"
+          data-id="{{item.id}}"
+        >
+          <view class="strain-checkbox">
+            <text wx:if="{{selectedStrains.includes(item.id)}}">✓</text>
+          </view>
+          <view class="strain-info">
+            <view class="strain-name">{{item.name}}</view>
+            <view class="strain-meta">{{item.source || '未填写来源'}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:else class="empty-state small">
+        <text class="empty-text">暂无菌种，请先添加</text>
+        <button class="btn-secondary" bindtap="goAddStrain">添加菌种</button>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{selectedStrains.length > 0}}">
+      <view class="section-title">已选择 {{selectedStrains.length}} 个菌种</view>
+      <view class="selected-strains">
+        <view class="selected-tag" wx:for="{{selectedStrainsInfo}}" wx:key="id">
+          {{item.name}}
+          <text class="remove-tag" catchtap="removeStrain" data-id="{{item.id}}">×</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 步骤3：提醒计划 -->
+  <view class="step-content" wx:if="{{currentStep === 3}}">
+    <view class="card">
+      <view class="section-header">
+        <view class="section-title">提醒计划</view>
+        <view class="add-btn" bindtap="addReminder">+ 添加提醒</view>
+      </view>
+
+      <view class="reminder-list">
+        <view class="reminder-item" wx:for="{{formData.reminders}}" wx:key="index">
+          <view class="reminder-header">
+            <view class="reminder-day">
+              <text wx:if="{{item.dayType === 'day'}}">第 {{item.dayNum}} 天</text>
+              <text wx:else>第 {{item.dayNum}} 小时</text>
+            </view>
+            <view class="reminder-actions">
+              <text class="edit-btn" catchtap="editReminder" data-index="{{index}}">编辑</text>
+              <text class="delete-btn" catchtap="deleteReminder" data-index="{{index}}">删除</text>
+            </view>
+          </view>
+          <view class="reminder-content">{{item.content}}</view>
+          <view class="reminder-meta">
+            <text class="reminder-time">{{item.time}}</text>
+            <text class="reminder-photo" wx:if="{{item.needPhoto}}">📷 需要拍照</text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{formData.reminders.length === 0}}" class="empty-state small">
+        <text class="empty-text">暂无提醒计划</text>
+        <text class="empty-hint">点击上方"添加提醒"创建</text>
+      </view>
+    </view>
+
+    <!-- 共享设置 -->
+    <view class="card">
+      <view class="form-item row">
+        <view class="form-label">共享给团队</view>
+        <switch 
+          checked="{{formData.isShared}}" 
+          bindchange="onShareChange"
+          color="#4CAF50"
+        />
+      </view>
+      
+      <view class="form-item" wx:if="{{formData.isShared}}">
+        <view class="form-label">选择团队</view>
+        <picker 
+          range="{{groupList}}" 
+          range-key="name" 
+          value="{{selectedGroupIndex}}"
+          bindchange="onGroupChange"
+        >
+          <view class="picker-value">
+            {{groupList[selectedGroupIndex].name || '请选择团队'}} ›
+          </view>
+        </picker>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-btns">
+    <button class="btn-secondary" wx:if="{{currentStep > 1}}" bindtap="prevStep">上一步</button>
+    <button class="btn-primary" wx:if="{{currentStep < 3}}" bindtap="nextStep">下一步</button>
+    <button class="btn-primary" wx:if="{{currentStep === 3}}" bindtap="submit">创建实验</button>
+  </view>
+</view>
+
+<!-- 添加提醒弹窗 -->
+<view class="modal-mask" wx:if="{{showReminderModal}}" bindtap="closeReminderModal"></view>
+<view class="modal-content" wx:if="{{showReminderModal}}">
+  <view class="modal-header">
+    <text class="modal-title">{{editingReminderIndex >= 0 ? '编辑提醒' : '添加提醒'}}</text>
+    <text class="modal-close" bindtap="closeReminderModal">×</text>
+  </view>
+  <view class="modal-body">
+    <!-- 时间类型 -->
+    <view class="form-item">
+      <view class="form-label">时间类型</view>
+      <view class="type-tags">
+        <view 
+          class="type-tag {{newReminder.dayType === 'day' ? 'active' : ''}}"
+          bindtap="setDayType"
+          data-type="day"
+        >按天</view>
+        <view 
+          class="type-tag {{newReminder.dayType === 'hour' ? 'active' : ''}}"
+          bindtap="setDayType"
+          data-type="hour"
+        >按小时</view>
+      </view>
+    </view>
+
+    <!-- 第几天/小时 -->
+    <view class="form-item">
+      <view class="form-label">{{newReminder.dayType === 'day' ? '第几天' : '第几小时'}}</view>
+      <input 
+        class="form-input" 
+        type="number" 
+        placeholder="{{newReminder.dayType === 'day' ? '如：3（第3天）' : '如：24（24小时后）'}}"
+        bindinput="onReminderInput"
+        data-field="dayNum"
+        value="{{newReminder.dayNum}}"
+      />
+    </view>
+
+    <!-- 提醒时间（按天才显示） -->
+    <view class="form-item" wx:if="{{newReminder.dayType === 'day'}}">
+      <view class="form-label">提醒时间</view>
+      <picker mode="time" value="{{newReminder.time}}" bindchange="onReminderTimeChange">
+        <view class="picker-value">{{newReminder.time}} ›</view>
+      </picker>
+    </view>
+
+    <!-- 提醒内容 -->
+    <view class="form-item">
+      <view class="form-label">提醒内容</view>
+      <textarea 
+        class="form-textarea" 
+        placeholder="如：检查涂布情况，准备划线"
+        bindinput="onReminderInput"
+        data-field="content"
+        value="{{newReminder.content}}"
+      />
+    </view>
+
+    <!-- 是否需要拍照 -->
+    <view class="form-item row">
+      <view class="form-label">需要拍照</view>
+      <switch 
+        checked="{{newReminder.needPhoto}}" 
+        bindchange="onNeedPhotoChange"
+        color="#4CAF50"
+      />
+    </view>
+  </view>
+  <view class="modal-footer">
+    <button class="modal-btn cancel" bindtap="closeReminderModal">取消</button>
+    <button class="modal-btn confirm" bindtap="saveReminder">保存</button>
+  </view>
+</view>

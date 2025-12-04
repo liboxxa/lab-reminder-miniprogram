@@ -1,0 +1,12 @@
+# Node / npm
+node_modules/
+miniprogram_npm/
+npm-debug.log*
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# 微信开发者工具缓存
+project.private.config.json
+dist/

@@ -1,0 +1,6 @@
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "菌种档案",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

@@ -1,0 +1,120 @@
+<view class="container">
+  <!-- 系统模板 -->
+  <view class="section">
+    <view class="section-title">系统预设模板</view>
+    <view class="template-list">
+      <view 
+        class="template-card" 
+        wx:for="{{systemTemplates}}" 
+        wx:key="id"
+        bindtap="viewTemplate"
+        data-template="{{item}}"
+      >
+        <view class="template-header">
+          <view class="template-name">{{item.name}}</view>
+          <view class="tag tag-blue">系统</view>
+        </view>
+        <view class="template-type">{{item.type}}</view>
+        <view class="template-info">
+          <text class="info-item">📋 {{item.steps.length}} 个步骤</text>
+          <text class="info-item">📅 共 {{item.totalDays}} 天</text>
+        </view>
+        <view class="template-steps">
+          <view class="step-preview" wx:for="{{item.steps}}" wx:for-item="step" wx:key="index" wx:if="{{index < 3}}">
+            <text class="step-day">{{step.dayType === 'day' ? 'D' + step.dayNum : 'H' + step.dayNum}}</text>
+            <text class="step-content">{{step.content}}</text>
+          </view>
+          <view class="step-more" wx:if="{{item.steps.length > 3}}">
+            +{{item.steps.length - 3}} 更多...
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 我的模板 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title">我的模板</view>
+      <view class="add-btn" bindtap="goAddTemplate">+ 新建</view>
+    </view>
+    
+    <view class="template-list" wx:if="{{myTemplates.length > 0}}">
+      <view 
+        class="template-card" 
+        wx:for="{{myTemplates}}" 
+        wx:key="id"
+        bindtap="viewTemplate"
+        data-template="{{item}}"
+      >
+        <view class="template-header">
+          <view class="template-name">{{item.name}}</view>
+          <view class="tag tag-green">自定义</view>
+        </view>
+        <view class="template-type">{{item.type}}</view>
+        <view class="template-info">
+          <text class="info-item">📋 {{item.steps.length}} 个步骤</text>
+          <text class="info-item">📅 共 {{item.totalDays}} 天</text>
+        </view>
+        <view class="template-steps">
+          <view class="step-preview" wx:for="{{item.steps}}" wx:for-item="step" wx:key="index" wx:if="{{index < 3}}">
+            <text class="step-day">{{step.dayType === 'day' ? 'D' + step.dayNum : 'H' + step.dayNum}}</text>
+            <text class="step-content">{{step.content}}</text>
+          </view>
+          <view class="step-more" wx:if="{{item.steps.length > 3}}">
+            +{{item.steps.length - 3}} 更多...
+          </view>
+        </view>
+        <view class="template-actions">
+          <text class="action-btn edit" catchtap="editTemplate" data-template="{{item}}">编辑</text>
+          <text class="action-btn delete" catchtap="deleteTemplate" data-id="{{item.id}}">删除</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="empty-state">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无自定义模板</text>
+      <text class="empty-hint">创建常用实验流程模板，快速创建实验</text>
+      <button class="btn-primary" bindtap="goAddTemplate">创建模板</button>
+    </view>
+  </view>
+</view>
+
+<!-- 模板详情弹窗 -->
+<view class="modal-mask" wx:if="{{showDetailModal}}" bindtap="closeDetailModal"></view>
+<view class="modal-content detail-modal" wx:if="{{showDetailModal}}">
+  <view class="modal-header">
+    <view class="modal-title-area">
+      <text class="modal-title">{{currentTemplate.name}}</text>
+      <view class="tag {{currentTemplate.isSystem ? 'tag-blue' : 'tag-green'}}">
+        {{currentTemplate.isSystem ? '系统' : '自定义'}}
+      </view>
+    </view>
+    <text class="modal-close" bindtap="closeDetailModal">×</text>
+  </view>
+  <view class="modal-body">
+    <view class="detail-type">实验类型：{{currentTemplate.type}}</view>
+    <view class="detail-section">
+      <view class="detail-title">步骤详情</view>
+      <view class="step-list">
+        <view class="step-item" wx:for="{{currentTemplate.steps}}" wx:key="index">
+          <view class="step-num">{{index + 1}}</view>
+          <view class="step-info">
+            <view class="step-time">
+              {{item.dayType === 'day' ? '第 ' + item.dayNum + ' 天' : '第 ' + item.dayNum + ' 小时'}}
+              <text class="step-clock" wx:if="{{item.time}}">{{item.time}}</text>
+            </view>
+            <view class="step-desc">{{item.content}}</view>
+            <view class="step-tags">
+              <text class="mini-tag" wx:if="{{item.needPhoto}}">📷 需要拍照</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="modal-footer">
+    <button class="modal-btn confirm" bindtap="useTemplate">使用此模板创建实验</button>
+  </view>
+</view>

@@ -1,0 +1,121 @@
+<view class="container">
+  <view class="card">
+    <!-- 菌种名称 -->
+    <view class="form-item">
+      <view class="form-label required">菌种名称/编号</view>
+      <input 
+        class="form-input" 
+        placeholder="如：E.coli DH5α" 
+        bindinput="onInput"
+        data-field="name"
+        value="{{formData.name}}"
+      />
+    </view>
+
+    <!-- 描述 -->
+    <view class="form-item">
+      <view class="form-label">描述</view>
+      <textarea 
+        class="form-textarea" 
+        placeholder="菌种描述信息（可选）"
+        bindinput="onInput"
+        data-field="description"
+        value="{{formData.description}}"
+      />
+    </view>
+
+    <!-- 来源 -->
+    <view class="form-item">
+      <view class="form-label">来源</view>
+      <input 
+        class="form-input" 
+        placeholder="如：实验室保藏、公司购买等" 
+        bindinput="onInput"
+        data-field="source"
+        value="{{formData.source}}"
+      />
+    </view>
+
+    <!-- 保存位置 -->
+    <view class="form-item">
+      <view class="form-label">保存位置</view>
+      <input 
+        class="form-input" 
+        placeholder="如：-80°C冰箱 A区 3层" 
+        bindinput="onInput"
+        data-field="storageLocation"
+        value="{{formData.storageLocation}}"
+      />
+    </view>
+
+    <!-- 培养条件 -->
+    <view class="form-item">
+      <view class="form-label">培养条件</view>
+      <view class="condition-tags">
+        <view class="condition-row">
+          <text class="condition-label">温度：</text>
+          <input 
+            class="condition-input" 
+            type="digit"
+            placeholder="37" 
+            bindinput="onConditionInput"
+            data-field="temperature"
+            value="{{formData.conditions.temperature}}"
+          />
+          <text class="condition-unit">°C</text>
+        </view>
+        <view class="condition-row">
+          <text class="condition-label">培养基：</text>
+          <input 
+            class="condition-input long" 
+            placeholder="如：LB" 
+            bindinput="onConditionInput"
+            data-field="medium"
+            value="{{formData.conditions.medium}}"
+          />
+        </view>
+        <view class="condition-row">
+          <text class="condition-label">其他：</text>
+          <input 
+            class="condition-input long" 
+            placeholder="如：添加抗生素" 
+            bindinput="onConditionInput"
+            data-field="other"
+            value="{{formData.conditions.other}}"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 共享设置 -->
+  <view class="card">
+    <view class="form-item row">
+      <view class="form-label">共享给团队</view>
+      <switch 
+        checked="{{formData.isShared}}" 
+        bindchange="onShareChange"
+        color="#4CAF50"
+      />
+    </view>
+    
+    <view class="form-item" wx:if="{{formData.isShared}}">
+      <view class="form-label">选择团队</view>
+      <picker 
+        range="{{groupList}}" 
+        range-key="name" 
+        value="{{selectedGroupIndex}}"
+        bindchange="onGroupChange"
+      >
+        <view class="picker-value">
+          {{groupList[selectedGroupIndex].name || '请选择团队'}} ›
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="btn-area">
+    <button class="btn-primary" bindtap="submit">保存</button>
+  </view>
+</view>

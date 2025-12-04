@@ -1,0 +1,128 @@
+.date-header {
+  padding: 30rpx 20rpx;
+  display: flex;
+  align-items: baseline;
+}
+
+.date-text {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.week-text {
+  font-size: 28rpx;
+  color: #666666;
+  margin-left: 20rpx;
+}
+
+/* 任务项 */
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-status {
+  width: 44rpx;
+  height: 44rpx;
+  border: 3rpx solid #4CAF50;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #ffffff;
+}
+
+.task-status.done {
+  background-color: #4CAF50;
+}
+
+.task-content {
+  flex: 1;
+}
+
+.task-title {
+  font-size: 30rpx;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.task-desc {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.task-time {
+  font-size: 26rpx;
+  color: #4CAF50;
+}
+
+/* 实验项 */
+.experiment-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.experiment-item:last-child {
+  border-bottom: none;
+}
+
+.experiment-info {
+  flex: 1;
+}
+
+.experiment-name {
+  font-size: 30rpx;
+  color: #333333;
+  margin-bottom: 12rpx;
+}
+
+.experiment-meta {
+  display: flex;
+  align-items: center;
+}
+
+.experiment-date {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.arrow {
+  font-size: 36rpx;
+  color: #cccccc;
+}
+
+/* 快捷操作 */
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 20rpx 0;
+}
+
+.action-btn {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 0;
+}
+
+.action-icon {
+  font-size: 60rpx;
+  margin-bottom: 12rpx;
+}
+
+.action-text {
+  font-size: 24rpx;
+  color: #666666;
+}
