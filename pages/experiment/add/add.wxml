@@ -2,12 +2,12 @@
   <!-- 步骤指示器 -->
   <view class="steps">
     <view class="step {{currentStep >= 1 ? 'active' : ''}}">
-      <view class="step-num">1</view>
+      <view class="step-num">步骤1</view>
       <text class="step-text">基本信息</text>
     </view>
     <view class="step-line {{currentStep >= 2 ? 'active' : ''}}"></view>
     <view class="step {{currentStep >= 2 ? 'active' : ''}}">
-      <view class="step-num">2</view>
+      <view class="step-num">步骤2</view>
       <text class="step-text">实验步骤</text>
     </view>
   </view>
@@ -15,6 +15,7 @@
   <!-- 步骤1：基本信息 -->
   <view class="step-content" wx:if="{{currentStep === 1}}">
     <view class="card">
+      <!-- 实验名称 -->
       <view class="form-item">
         <view class="form-label required">实验名称</view>
         <input
@@ -26,9 +27,9 @@
         />
       </view>
 
+      <!-- 实验类型（自定义） -->
       <view class="form-item">
         <view class="form-label required">实验类型</view>
-        <!-- 自由输入，同时下面会根据已存在模板中的类型给出推荐 -->
         <input
           class="form-input"
           placeholder="如：涂布培养、甲醇诱导、自定义流程"
@@ -43,8 +44,8 @@
               class="type-tag {{formData.type === item ? 'active' : ''}}"
               wx:for="{{typeOptions}}"
               wx:key="*this"
-              bindtap="selectTypeFromTag"
               data-type="{{item}}"
+              bindtap="selectTypeFromTag"
             >
               {{item}}
             </view>
@@ -52,6 +53,7 @@
         </view>
       </view>
 
+      <!-- 选择模板（可选） -->
       <view class="form-item">
         <view class="form-label">选择模板（可选）</view>
         <view wx:if="{{filteredTemplates.length > 0}}" class="template-list">
@@ -59,11 +61,13 @@
             class="template-item {{formData.templateId === item.id ? 'active' : ''}}"
             wx:for="{{filteredTemplates}}"
             wx:key="id"
-            bindtap="selectTemplate"
             data-template="{{item}}"
+            bindtap="selectTemplate"
           >
             <view class="template-name">{{item.name}}</view>
-            <view class="template-desc">共 {{item.stepsCount}} 步 · 类型：{{item.type || '未分类'}}</view>
+            <view class="template-desc">
+              共 {{item.stepsCount}} 步 · 类型：{{item.type || '未分类'}}
+            </view>
             <view
               class="template-check"
               wx:if="{{formData.templateId === item.id}}"
@@ -76,6 +80,7 @@
         </view>
       </view>
 
+      <!-- 开始日期 -->
       <view class="form-item">
         <view class="form-label required">开始日期</view>
         <picker mode="date" value="{{formData.startDate}}" bindchange="onDateChange">
@@ -85,6 +90,7 @@
         </picker>
       </view>
 
+      <!-- 实验描述 -->
       <view class="form-item">
         <view class="form-label">实验描述</view>
         <textarea
@@ -100,6 +106,7 @@
 
   <!-- 步骤2：实验步骤 -->
   <view class="step-content" wx:if="{{currentStep === 2}}">
+    <!-- 步骤列表 -->
     <view class="card">
       <view class="section-header">
         <view class="section-title">实验步骤</view>
@@ -109,10 +116,10 @@
       <view wx:if="{{steps.length > 0}}">
         <view class="step-card" wx:for="{{steps}}" wx:key="index">
           <view class="step-header">
-            <view class="step-num">步骤{{index + 1}}</view>
+            <view class="step-num">步骤 {{index + 1}}</view>
             <view class="step-actions">
-              <text class="action-btn" catchtap="editStep" data-index="{{index}}">编辑</text>
-              <text class="action-btn delete" catchtap="deleteStep" data-index="{{index}}">删除</text>
+              <text class="action-btn" data-index="{{index}}" catchtap="editStep">编辑</text>
+              <text class="action-btn delete" data-index="{{index}}" catchtap="deleteStep">删除</text>
             </view>
           </view>
           <view class="step-body">
@@ -138,27 +145,26 @@
       </view>
     </view>
 
-    <!-- 可以在这里加“是否共享”、“是否保存为模板”等开关，以后扩展 -->
-    <!-- 新增：是否保存为模板 -->
+    <!-- 保存为模板 -->
     <view class="card">
-    <view class="form-item row">
-      <view class="form-label">将本次实验步骤保存为模板</view>
-      <switch
-        checked="{{saveAsTemplate}}"
-        bindchange="onSaveAsTemplateChange"
-        color="#4CAF50"
-      />
+      <view class="form-item row">
+        <view class="form-label">将本次实验步骤保存为模板</view>
+        <switch
+          checked="{{saveAsTemplate}}"
+          bindchange="onSaveAsTemplateChange"
+          color="#4CAF50"
+        />
+      </view>
+      <view class="form-item" wx:if="{{saveAsTemplate}}">
+        <view class="form-label required">模板名称</view>
+        <input
+          class="form-input"
+          placeholder="如：涂布培养标准流程"
+          bindinput="onTemplateNameInput"
+          value="{{templateName}}"
+        />
+      </view>
     </view>
-    <view class="form-item" wx:if="{{saveAsTemplate}}">
-      <view class="form-label required">模板名称</view>
-      <input
-        class="form-input"
-        placeholder="如：涂布培养标准流程"
-        bindinput="onTemplateNameInput"
-        value="{{templateName}}"
-      />
-    </view>
-  </view>
   </view>
 
   <!-- 底部按钮 -->
@@ -177,6 +183,7 @@
     <text class="modal-close" bindtap="closeStepModal">×</text>
   </view>
   <view class="modal-body">
+    <!-- 步骤名称 -->
     <view class="form-item">
       <view class="form-label required">步骤名称</view>
       <input
@@ -188,22 +195,24 @@
       />
     </view>
 
+    <!-- 时间类型 -->
     <view class="form-item">
       <view class="form-label">时间类型</view>
       <view class="type-tags">
         <view
           class="type-tag {{editingStep.dayType === 'day' ? 'active' : ''}}"
-          bindtap="setStepDayType"
           data-type="day"
+          bindtap="setStepDayType"
         >按天</view>
         <view
           class="type-tag {{editingStep.dayType === 'hour' ? 'active' : ''}}"
-          bindtap="setStepDayType"
           data-type="hour"
+          bindtap="setStepDayType"
         >按小时</view>
       </view>
     </view>
 
+    <!-- 第几天/小时 -->
     <view class="form-item">
       <view class="form-label required">
         {{editingStep.dayType === 'day' ? '第几天' : '第几小时'}}
@@ -218,6 +227,7 @@
       />
     </view>
 
+    <!-- 提醒时间（仅按天时可选） -->
     <view class="form-item" wx:if="{{editingStep.dayType === 'day'}}">
       <view class="form-label">提醒时间</view>
       <picker mode="time" value="{{editingStep.time}}" bindchange="onStepTimeChange">
@@ -225,6 +235,7 @@
       </picker>
     </view>
 
+    <!-- 使用试剂和用量（文本） -->
     <view class="form-item">
       <view class="form-label">使用试剂和用量（文本）</view>
       <textarea
@@ -235,9 +246,66 @@
         value="{{editingStep.reagentText}}"
       />
     </view>
+
+    <!-- 从试剂库选择 -->
+    <view class="form-item row">
+      <view class="form-label">从试剂库选择</view>
+      <view class="btn-secondary small" catchtap="openReagentSelector">
+        选择试剂
+      </view>
+    </view>
   </view>
   <view class="modal-footer">
     <button class="modal-btn cancel" bindtap="closeStepModal">取消</button>
     <button class="modal-btn confirm" bindtap="saveStep">保存</button>
+  </view>
+</view>
+
+<!-- 试剂选择弹窗 -->
+<view class="modal-mask" wx:if="{{showReagentSelector}}" bindtap="closeReagentSelector"></view>
+<view class="modal-content reagent-selector" wx:if="{{showReagentSelector}}">
+  <view class="modal-header">
+    <text class="modal-title">选择试剂及用量</text>
+    <text class="modal-close" bindtap="closeReagentSelector">×</text>
+  </view>
+  <view class="modal-body">
+    <scroll-view scroll-y="true" style="max-height: 60vh;">
+      <checkbox-group bindchange="onReagentCheckChange">
+        <view
+          class="reagent-row"
+          wx:for="{{reagentList}}"
+          wx:key="id"
+          wx:for-item="r"
+        >
+          <view class="reagent-left">
+            <checkbox
+              value="{{r.id}}"
+              checked="{{selectedReagentMap[r.id]}}"
+            />
+            <view class="reagent-info">
+              <view class="reagent-name">{{r.name}}</view>
+              <view class="reagent-unit" wx:if="{{r.unit}}">单位：{{r.unit}}</view>
+            </view>
+          </view>
+          <view class="reagent-right">
+            <input
+              class="amount-input"
+              type="text"
+              placeholder="用量"
+              data-id="{{r.id}}"
+              bindinput="onReagentAmountInput"
+              value="{{selectedReagentMap[r.id] ? selectedReagentMap[r.id].amount : ''}}"
+            />
+          </view>
+        </view>
+      </checkbox-group>
+    </scroll-view>
+    <view class="hint-text" style="margin-top: 10rpx;">
+      提示：勾选试剂并填写用量后，系统会自动填入“使用试剂和用量（文本）”中，你可以再手动调整。
+    </view>
+  </view>
+  <view class="modal-footer">
+    <button class="modal-btn cancel" bindtap="closeReagentSelector">取消</button>
+    <button class="modal-btn confirm" bindtap="confirmReagentSelection">确定</button>
   </view>
 </view>
