@@ -1,6 +1,6 @@
 const api = require('../../../utils/api');
 const app = getApp();
-
+const SUBSCRIBE_TEMPLATE_ID = 'SYDLqB_b-hYwnS3RQ3dtfAGewfpiL6wZRNcxxJZHsDw';
 Page({
   data: {
     currentStep: 1,
@@ -443,15 +443,37 @@ Page({
         content: '还没有添加任何实验步骤，确定要继续吗？',
         success: (res) => {
           if (res.confirm) {
-            this.doSubmit();
+            this.subscribeAndSubmit();
           }
         }
       });
-      return;
+    } else {
+      this.subscribeAndSubmit();
     }
-    this.doSubmit();
   },
+// 先请求订阅授权，再真正提交创建实验
+subscribeAndSubmit() {
+  // 如果没配置模板 ID，就直接走提交，避免报错
+  if (!SUBSCRIBE_TEMPLATE_ID) {
+    this.doSubmit();
+    return;
+  }
 
+  wx.requestSubscribeMessage({
+    tmplIds: [SUBSCRIBE_TEMPLATE_ID],
+    success: (res) => {
+      // 打印授权结果，看用户是 accept / reject / ban
+      console.log('订阅消息授权结果:', res);
+      // 无论同意还是拒绝，都继续创建实验（只是后端能不能推送的问题）
+      this.doSubmit();
+    },
+    fail: (err) => {
+      console.error('订阅消息授权失败:', err);
+      // 授权失败也继续创建实验，避免阻塞正常流程
+      this.doSubmit();
+    }
+  });
+},
   // 真正提交创建实验 + 可选保存为模板
   doSubmit() {
     const { formData, steps, saveAsTemplate, templateName } = this.data;
