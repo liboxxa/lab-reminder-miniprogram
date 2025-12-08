@@ -17,7 +17,9 @@ Page({
     filteredTemplates: [],
     typeOptions: [],
     steps: [],
-
+    // 团队共享相关
+    groupList: [],
+    selectedGroupIndex: 0,
     // 保存为模板相关
     saveAsTemplate: false,
     templateName: '',
@@ -43,14 +45,31 @@ Page({
   onLoad(options) {
     this.initStartDate();
     this.loadTemplates();
-
+    this.loadReagents && this.loadReagents();
+    this.loadGroupList();   // 新增：加载我的团队列表
     if (options.templateId) {
       this.setData({
         'formData.templateId': options.templateId
       });
     }
   },
-
+  loadGroupList() {
+    if (!app.globalData.isLogin) return;
+    api.getGroupList().then(res => {
+      const list = res.data || [];
+      this.setData({ groupList: list });
+  
+      // 如果当前已经勾选共享，且有团队，则默认选第一个
+      if (this.data.formData.isShared && list.length > 0) {
+        this.setData({
+          selectedGroupIndex: 0,
+          'formData.groupId': list[0].id
+        });
+      }
+    }).catch(err => {
+      console.error('获取团队列表失败:', err);
+    });
+  },
   // 初始化开始日期为今天
   initStartDate() {
     const today = new Date();
@@ -81,7 +100,33 @@ Page({
       console.error('获取模板列表失败:', err);
     });
   },
-
+  onShareChange(e) {
+    const checked = e.detail.value;
+    this.setData({
+      'formData.isShared': checked
+    });
+  
+    if (checked && this.data.groupList.length > 0) {
+      // 默认选择第一个团队
+      this.setData({
+        selectedGroupIndex: 0,
+        'formData.groupId': this.data.groupList[0].id
+      });
+    } else {
+      this.setData({
+        'formData.groupId': ''
+      });
+    }
+  },
+  
+  onGroupChange(e) {
+    const index = parseInt(e.detail.value, 10);
+    const group = this.data.groupList[index];
+    this.setData({
+      selectedGroupIndex: index,
+      'formData.groupId': group ? group.id : ''
+    });
+  },
   // 根据当前类型过滤模板
   filterTemplates() {
     const { templateList, formData } = this.data;

@@ -16,7 +16,10 @@
         </view>
         <view class="task-content">
           <view class="task-title">{{item.title}}</view>
-          <view class="task-desc">{{item.experimentName}} · {{item.strainName}}</view>
+          <view class="task-desc">
+            <text>{{item.experimentName}}</text>
+            <text wx:if="{{item.strainName}}"> · {{item.strainName}}</text>
+          </view>
         </view>
         <view class="task-time">{{item.time}}</view>
       </view>

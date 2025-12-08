@@ -11,7 +11,9 @@ Page({
       groupId: ''
     },
     isEdit: false,
-    editId: ''
+    editId: '',
+    groupList: [],
+    selectedGroupIndex: 0
   },
 
   onLoad(options) {
@@ -23,6 +25,7 @@ Page({
       wx.setNavigationBarTitle({ title: '编辑试剂' });
       this.loadDetail(options.id);
     }
+    this.loadGroupList();   // 新增
   },
 
   loadDetail(id) {
@@ -56,7 +59,49 @@ Page({
       'formData.isShared': e.detail.value
     });
   },
-
+  loadGroupList() {
+    const api = require('../../../utils/api');
+    api.getGroupList().then(res => {
+      const list = res.data || [];
+      this.setData({ groupList: list });
+  
+      if (this.data.formData.isShared && list.length > 0) {
+        this.setData({
+          selectedGroupIndex: 0,
+          'formData.groupId': list[0].id
+        });
+      }
+    }).catch(err => {
+      console.error('获取团队列表失败:', err);
+    });
+  },
+  
+  onShareChange(e) {
+    const checked = e.detail.value;
+    this.setData({
+      'formData.isShared': checked
+    });
+  
+    if (checked && this.data.groupList.length > 0) {
+      this.setData({
+        selectedGroupIndex: 0,
+        'formData.groupId': this.data.groupList[0].id
+      });
+    } else {
+      this.setData({
+        'formData.groupId': ''
+      });
+    }
+  },
+  
+  onGroupChange(e) {
+    const index = parseInt(e.detail.value, 10);
+    const group = this.data.groupList[index];
+    this.setData({
+      selectedGroupIndex: index,
+      'formData.groupId': group ? group.id : ''
+    });
+  },
   submit() {
     const { formData, isEdit, editId } = this.data;
     if (!formData.name.trim()) {

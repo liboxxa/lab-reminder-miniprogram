@@ -102,6 +102,32 @@
         />
       </view>
     </view>
+
+    <!-- 共享给团队 -->
+    <view class="card">
+      <view class="form-item row">
+        <view class="form-label">共享给团队</view>
+        <switch
+          checked="{{formData.isShared}}"
+          bindchange="onShareChange"
+          color="#4CAF50"
+        />
+      </view>
+
+      <view class="form-item" wx:if="{{formData.isShared}}">
+        <view class="form-label">选择团队</view>
+        <picker
+          range="{{groupList}}"
+          range-key="name"
+          value="{{selectedGroupIndex}}"
+          bindchange="onGroupChange"
+        >
+          <view class="picker-value">
+            {{groupList.length ? groupList[selectedGroupIndex].name : '暂无团队'}} ›
+          </view>
+        </picker>
+      </view>
+    </view>
   </view>
 
   <!-- 步骤2：实验步骤 -->
@@ -280,7 +306,6 @@
           <view class="reagent-left">
             <checkbox
               value="{{r.id}}"
-              checked="{{selectedReagentMap[r.id]}}"
             />
             <view class="reagent-info">
               <view class="reagent-name">{{r.name}}</view>
@@ -294,14 +319,13 @@
               placeholder="用量"
               data-id="{{r.id}}"
               bindinput="onReagentAmountInput"
-              value="{{selectedReagentMap[r.id] ? selectedReagentMap[r.id].amount : ''}}"
             />
           </view>
         </view>
       </checkbox-group>
     </scroll-view>
     <view class="hint-text" style="margin-top: 10rpx;">
-      提示：勾选试剂并填写用量后，系统会自动填入“使用试剂和用量（文本）”中，你可以再手动调整。
+      提示：勾选试剂并填写用量后，系统会自动填入上方“使用试剂和用量（文本）”，你也可以再手动调整。
     </view>
   </view>
   <view class="modal-footer">

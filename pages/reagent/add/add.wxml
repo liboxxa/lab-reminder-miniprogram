@@ -55,6 +55,19 @@
         color="#4CAF50"
       />
     </view>
+    <view class="form-item" wx:if="{{formData.isShared}}">
+    <view class="form-label">选择团队</view>
+    <picker
+      range="{{groupList}}"
+      range-key="name"
+      value="{{selectedGroupIndex}}"
+      bindchange="onGroupChange"
+    >
+      <view class="picker-value">
+        {{groupList.length ? groupList[selectedGroupIndex].name : '暂无团队'}} ›
+      </view>
+    </picker>
+  </view>
   </view>
 
   <view class="btn-area">
