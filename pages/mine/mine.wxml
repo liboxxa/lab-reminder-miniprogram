@@ -1,7 +1,11 @@
 <view class="container">
   <!-- 用户信息 -->
   <view class="user-card card">
-    <image class="avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+    <image class="avatar" 
+    src="{{userInfo.avatar || '/images/default-avatar.png'}}" 
+    mode="aspectFill"
+    bindtap="changeAvatar" 
+    ></image>
     <view class="user-info">
       <view class="nickname">{{userInfo.nickname || '点击登录'}}</view>
       <view class="user-id" wx:if="{{userInfo.id}}">ID: {{userInfo.id}}</view>

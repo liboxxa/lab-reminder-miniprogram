@@ -126,7 +126,11 @@
   font-size: 28rpx;
   color: #999999;
 }
-
+.experiment-share {
+  font-size: 24rpx;
+  color: #999999;
+  margin-bottom: 8rpx;
+}
 .btn-primary {
   background-color: #4CAF50;
   color: #ffffff;

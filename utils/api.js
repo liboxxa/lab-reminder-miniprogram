@@ -79,7 +79,13 @@ function getReagentDetail(id) {
     method: 'GET'
   });
 }
-
+function updateProfile(data) {
+  return request({
+    url: '/auth/profile',
+    method: 'PUT',
+    data
+  });
+}
 function createReagent(data) {
   return request({
     url: '/reagents',
@@ -87,7 +93,10 @@ function createReagent(data) {
     data
   });
 }
-
+// 导出实验数据（返回下载 URL，或者直接在页面逻辑里处理）
+function getExportUrl() {
+  return config.baseUrl + '/experiments/export';
+}
 function updateReagent(id, data) {
   return request({
     url: `/reagents/${id}`,
@@ -330,7 +339,33 @@ function createGroup(data) {
     data
   });
 }
-
+// 上传头像文件
+function uploadFile(filePath) {
+  return new Promise((resolve, reject) => {
+    const token = getToken();
+    wx.uploadFile({
+      url: config.baseUrl + '/upload/avatar',
+      filePath: filePath,
+      name: 'file',
+      header: {
+        'Authorization': 'Bearer ' + token
+      },
+      success(res) {
+        if (res.statusCode === 200) {
+          const data = JSON.parse(res.data);
+          if (data.code === 0) {
+            resolve(data.data);
+          } else {
+            reject(data);
+          }
+        } else {
+          reject(res);
+        }
+      },
+      fail: reject
+    });
+  });
+}
 // 加入团队
 function joinGroup(inviteCode) {
   return request({
@@ -410,5 +445,9 @@ module.exports = {
   getReagentDetail,
   createReagent,
   updateReagent,
-  deleteReagent
+  deleteReagent,
+  // ...已有导出
+  updateProfile,
+  getExportUrl,
+  uploadFile
 };

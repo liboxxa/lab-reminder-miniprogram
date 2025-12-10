@@ -60,11 +60,12 @@ loadData() {
         todayTasks: [],
         ongoingExperiments: []
       });
-      return;
+      return Promise.resolve();
     }
-
-    this.loadTodayTasks();
-    this.loadOngoingExperiments();
+    return Promise.all([
+      this.loadTodayTasks(),
+      this.loadOngoingExperiments()
+    ]);
   },
 
   // 加载今日待办（改成返回 Promise）

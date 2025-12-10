@@ -63,26 +63,36 @@
           </view>
           <view class="timeline-title">{{item.content}}</view>
           
-          <!-- 操作记录 -->
-          <view class="timeline-logs" wx:if="{{item.logs && item.logs.length > 0}}">
-            <view class="log-entry" wx:for="{{item.logs}}" wx:for-item="log" wx:key="id">
-              <view class="log-text">{{log.content}}</view>
-              <view class="log-images" wx:if="{{log.images && log.images.length > 0}}">
-                <image 
-                  wx:for="{{log.images}}" 
-                  wx:for-item="img" 
-                  wx:key="*this"
-                  src="{{img}}" 
-                  mode="aspectFill"
-                  class="log-image"
-                  bindtap="previewImage"
-                  data-urls="{{log.images}}"
-                  data-current="{{img}}"
-                />
-              </view>
-              <view class="log-time">{{log.operatedAt}}</view>
-            </view>
+         <!-- 操作记录 -->
+      <view class="timeline-logs" wx:if="{{item.logs && item.logs.length > 0}}">
+        <view class="log-entry" wx:for="{{item.logs}}" wx:for-item="log" wx:key="id">
+         <!-- 新增：头部显示 操作人 + 时间 -->
+          <view class="log-header">
+            <text class="log-operator">{{log.operatorName || '未知成员'}}</text>
+           <text class="log-time">{{log.operatedAt}}</text>
           </view>
+
+          <!-- 日志内容 -->
+          <view class="log-content-area">
+            <view class="log-text">{{log.content}}</view>
+      
+            <!-- 图片列表 -->
+           <view class="log-images" wx:if="{{log.images && log.images.length > 0}}">
+             <image 
+               wx:for="{{log.images}}" 
+                wx:for-item="img" 
+                wx:key="*this"
+                src="{{img}}" 
+                mode="aspectFill"
+               class="log-image"
+               bindtap="previewImage"
+               data-urls="{{log.images}}"
+               data-current="{{img}}"
+              />
+            </view>
+         </view>
+        </view>
+         </view>
 
           <!-- 操作按钮 -->
           <view class="timeline-actions" wx:if="{{item.status === 'current' || item.status === 'pending'}}">

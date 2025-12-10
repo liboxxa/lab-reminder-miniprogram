@@ -17,6 +17,14 @@
           </view>
         </view>
         <view class="experiment-type">{{item.type}}</view>
+        <view class="experiment-share">
+        <text wx:if="{{item.isShared}}">
+         {{item.isOwner
+           ? ('已共享给 ' + item.sharedGroupName)
+           : ('来自 ' + item.sharedGroupName + ' · ' + item.creatorName + ' 共享')}}
+       </text>
+        <text wx:else>未共享</text>
+      </view>
         <view class="experiment-info">
           <view class="info-row">
             <text class="info-label">开始日期：</text>
