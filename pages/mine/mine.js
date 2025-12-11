@@ -135,6 +135,7 @@ Page({
             const userInfo = { ...that.data.userInfo, nickname: newNick };
             that.setData({ userInfo });
             wx.setStorageSync('userInfo', userInfo);
+            app.globalData.userInfo = userInfo;      // <--- 这句也不能少
             wx.showToast({ title: '昵称已更新', icon: 'success' });
           }).catch(err => {
             console.error('更新昵称失败:', err);
@@ -144,58 +145,60 @@ Page({
     });
   },
 // 更换头像
-changeAvatar() {
-  const that = this;
-  if (!app.globalData.isLogin) {
-    wx.navigateTo({ url: '/pages/login/login' });
-    return;
-  }
-
-  wx.chooseMedia({
-    count: 1,
-    mediaType: ['image'],
-    sourceType: ['album', 'camera'],
-    success(res) {
-      const tempFilePath = res.tempFiles[0].tempFilePath;
-      
-      wx.showLoading({ title: '上传中...' });
-
-      // 1. 上传图片
-      api.uploadFile(tempFilePath).then(data => {
-        // data.url 是相对路径 /public/..., 我们需要拼成完整 URL 或直接存
-        // 这里建议存完整 URL 到数据库，或者前端显示时拼域名
-        // 简单起见，我们假设后端返回相对路径，前端补全显示
-        // 但为了 updateProfile 方便，我们最好存完整 URL
-        
-        // 如果后端返回的是 /public/...，我们需要拼上域名
-        // 或者是让后端直接返回完整 URL
-        // 这里我们在前端拼一下：
-        let fullUrl = data.url;
-        if (fullUrl.startsWith('/')) {
-          // 去掉 config.baseUrl 里的 /api
-          const domain = config.baseUrl.replace('/api', '');
-          fullUrl = domain + fullUrl;
-        }
-
-        // 2. 更新用户信息（写入数据库）
-        api.updateProfile({ avatar: fullUrl }).then(() => {
-          // 3. 更新本地显示
-          const userInfo = { ...that.data.userInfo, avatar: fullUrl };
-          that.setData({ userInfo });
-          wx.setStorageSync('userInfo', userInfo);
-          app.globalData.userInfo = userInfo;
-
-          wx.hideLoading();
-          wx.showToast({ title: '头像已更新', icon: 'success' });
-        });
-      }).catch(err => {
-        wx.hideLoading();
-        console.error('上传失败', err);
-        wx.showToast({ title: '上传失败', icon: 'none' });
-      });
+  // 更换头像
+  changeAvatar() {
+    const that = this;
+    if (!app.globalData.isLogin) {
+      wx.navigateTo({ url: '/pages/login/login' });
+      return;
     }
-  });
-},
+
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success(res) {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        
+        wx.showLoading({ title: '上传中...' });
+
+        // 1. 上传图片
+        api.uploadFile(tempFilePath).then(data => {
+          let fullUrl = data.url;
+          // 如果后端返回相对路径，手动拼域名
+          if (fullUrl.startsWith('/')) {
+            const domain = config.baseUrl.replace('/api', '');
+            fullUrl = domain + fullUrl;
+          }
+
+          // 2. 更新用户信息（只传 avatar，后端不会动昵称）
+          api.updateProfile({ avatar: fullUrl }).then(() => {
+            
+            // 3. 【关键修改】不要直接用本地旧数据覆盖，而是只更新 avatar
+            const currentUserInfo = wx.getStorageSync('userInfo') || that.data.userInfo;
+            const newUserInfo = { ...currentUserInfo, avatar: fullUrl };
+            
+            // 更新页面数据
+            that.setData({ userInfo: newUserInfo });
+            
+            // 更新缓存和全局变量
+            wx.setStorageSync('userInfo', newUserInfo);
+            app.globalData.userInfo = newUserInfo;
+
+            wx.hideLoading();
+            wx.showToast({ title: '头像已更新', icon: 'success' });
+            
+            // 【可选双保险】为了绝对稳妥，可以重新拉取一次用户信息
+            // that.loadUserInfoFromApi(); 
+          });
+        }).catch(err => {
+          wx.hideLoading();
+          console.error('上传失败', err);
+          wx.showToast({ title: '上传失败', icon: 'none' });
+        });
+      }
+    });
+  },
   // 跳转团队
   goGroup() {
     if (!app.globalData.isLogin) {
@@ -279,7 +282,7 @@ changeAvatar() {
   showAbout() {
     wx.showModal({
       title: '实验提醒助手',
-      content: '版本 1.3.0\n帮助科研人员管理实验进程\n\n开发：实验室团队',
+      content: '版本 1.3.2\n帮助科研人员管理实验进程\n\n开发：实验室团队',
       showCancel: false
     });
   },

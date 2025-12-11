@@ -85,20 +85,34 @@ Page({
   },
 
   // 执行完成任务
-  doCompleteTask(item, images) {
+  doCompleteTask(item, localImages) {
     wx.showLoading({ title: '处理中...' });
 
-    api.updateReminderStatus(this.data.experimentId, item.id, {
-      status: 'done',
-      content: '完成任务',
-      images: images
-    }).then(() => {
-      wx.hideLoading();
-      wx.showToast({ title: '已完成', icon: 'success' });
-      this.loadExperimentDetail(this.data.experimentId);
+    // 1. 上传图片
+    const uploadPromises = localImages.map(img => {
+      return api.uploadFile(img).then(res => {
+        let url = res.url;
+        if (url.startsWith('/')) {
+           url = 'https://aixlab.online' + url;
+        }
+        return url;
+      });
+    });
+
+    Promise.all(uploadPromises).then(uploadedUrls => {
+      // 2. 调用完成接口
+      api.updateReminderStatus(this.data.experimentId, item.id, {
+        status: 'done',
+        content: '完成任务',
+        images: uploadedUrls
+      }).then(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '已完成', icon: 'success' });
+        this.loadExperimentDetail(this.data.experimentId);
+      });
     }).catch(err => {
       wx.hideLoading();
-      console.error('完成任务失败:', err);
+      console.error('上传失败:', err);
     });
   },
 
@@ -180,32 +194,54 @@ Page({
   },
 
   // 提交日志
-  submitLog() {
-    const { newLog, reminderOptions, selectedReminderIndex, experimentId } = this.data;
-
-    if (!newLog.content.trim() && newLog.images.length === 0) {
-      wx.showToast({ title: '请输入内容或添加图片', icon: 'none' });
-      return;
-    }
-
-    const reminderId = reminderOptions[selectedReminderIndex]?.taskId;
-
-    wx.showLoading({ title: '保存中...' });
-
-    api.addExperimentLog(experimentId, {
-      reminderId: reminderId,
-      content: newLog.content,
-      images: newLog.images
-    }).then(() => {
-      wx.hideLoading();
-      wx.showToast({ title: '记录已保存', icon: 'success' });
-      this.setData({ showLogModal: false });
-      this.loadExperimentDetail(experimentId);
-    }).catch(err => {
-      wx.hideLoading();
-      console.error('保存记录失败:', err);
-    });
-  },
+    // 提交日志
+    submitLog() {
+      const { newLog, reminderOptions, selectedReminderIndex, experimentId } = this.data;
+  
+      // 校验
+      if (!newLog.content.trim() && newLog.images.length === 0) {
+        wx.showToast({ title: '请输入内容或添加图片', icon: 'none' });
+        return;
+      }
+  
+      const reminderId = reminderOptions[selectedReminderIndex]?.taskId;
+  
+      wx.showLoading({ title: '正在上传...' });
+  
+      // 1. 过滤出需要上传的图片（如果是 wxfile:// 或 http://tmp 开头）
+      const uploadPromises = newLog.images.map(img => {
+        if (img.startsWith('wxfile://') || img.startsWith('http://tmp') || img.startsWith('wx-file://')) {
+          return api.uploadFile(img).then(res => {
+            // 确保拿到的是完整 URL
+            let url = res.url;
+            if (url.startsWith('/')) {
+               url = 'https://aixlab.online' + url;
+            }
+            return url;
+          });
+        }
+        return Promise.resolve(img); // 已经是网络图片的不用传
+      });
+  
+      // 2. 等所有图片上传完
+      Promise.all(uploadPromises).then(uploadedUrls => {
+        // 3. 提交日志到后端
+        api.addExperimentLog(experimentId, {
+          reminderId: reminderId,
+          content: newLog.content,
+          images: uploadedUrls // 这里的 URL 都是 https://...
+        }).then(() => {
+          wx.hideLoading();
+          wx.showToast({ title: '记录已保存', icon: 'success' });
+          this.setData({ showLogModal: false });
+          this.loadExperimentDetail(experimentId);
+        });
+      }).catch(err => {
+        wx.hideLoading();
+        console.error('上传或保存失败:', err);
+        wx.showToast({ title: '保存失败', icon: 'none' });
+      });
+    },
 
   // 预览图片
   previewImage(e) {
