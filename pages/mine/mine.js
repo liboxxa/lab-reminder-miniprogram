@@ -1,5 +1,6 @@
 const api = require('../../utils/api');
 const app = getApp();
+const SUBSCRIBE_TEMPLATE_ID = 'SYDLqB_b-hYwnS3RQ3dtfAGewfpiL6wZRNcxxJZHsDw';
 const config = require('../../utils/config'); // 引入 config 方便拼 URL
 Page({
   data: {
@@ -51,7 +52,22 @@ Page({
     const index = this.data.maxRepeatOptions.indexOf(value);
     return index >= 0 ? index : 2;
   },
-
+  enableSubscription() {
+    wx.requestSubscribeMessage({
+      tmplIds: [SUBSCRIBE_TEMPLATE_ID],
+      success(res) {
+        if (res[SUBSCRIBE_TEMPLATE_ID] === 'accept') {
+          wx.showToast({ title: '已开启提醒', icon: 'success' });
+        } else {
+          wx.showToast({ title: '您取消了授权', icon: 'none' });
+        }
+      },
+      fail(err) {
+        console.error(err);
+        wx.showToast({ title: '开启失败', icon: 'none' });
+      }
+    });
+  },
   // 修改提醒时间
   onTimeChange(e) {
     const settings = this.data.settings;
