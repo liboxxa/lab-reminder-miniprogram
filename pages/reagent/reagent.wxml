@@ -1,14 +1,41 @@
 <view class="container">
-  <!-- 搜索栏 -->
-  <view class="search-bar">
-    <input class="search-input" placeholder="搜索试剂名称" bindinput="onSearch" />
+  <!-- 试剂库切换栏 -->
+  <view class="library-header" wx:if="{{libraryList.length > 0}}">
+    <picker bindchange="onLibraryChange" value="{{libraryIndex}}" range="{{libraryList}}" range-key="name">
+      <view class="library-picker">
+        <text class="library-name">🧪 {{currentLibrary.name || '选择试剂库'}} ▾</text>
+      </view>
+    </picker>
+    <view class="library-actions">
+      <view class="action-btn" bindtap="showCreateDialog">✨ 创建</view>
+      <view class="action-btn" bindtap="showJoinDialog">➕ 加入</view>
+      <view class="action-btn" bindtap="showMembers">👥 成员</view>
+    </view>
   </view>
 
-  <!-- 标签切换：全部 / 我的 / 共享 -->
-  <view class="filter-tabs">
-    <view class="tab {{currentTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
-    <view class="tab {{currentTab === 'mine' ? 'active' : ''}}" bindtap="switchTab" data-tab="mine">我的</view>
-    <view class="tab {{currentTab === 'shared' ? 'active' : ''}}" bindtap="switchTab" data-tab="shared">共享</view>
+  <!-- 空试剂库状态 -->
+  <view class="empty-state" wx:if="{{libraryList.length === 0 && hasLoadedLibraries}}">
+    <text class="empty-text">您还没有加入任何试剂库</text>
+    <view class="btn-primary" style="margin-top: 30rpx;" bindtap="showCreateDialog">创建试剂库</view>
+    <view class="btn-outline" style="margin-top: 20rpx;" bindtap="showJoinDialog">输入邀请码加入</view>
+  </view>
+
+  <block wx:if="{{libraryList.length > 0}}">
+    <!-- 搜索栏 -->
+    <view class="search-bar">
+      <input class="search-input" placeholder="搜索当前库试剂" bindinput="onSearch" />
+    </view>
+
+    <!-- 工具栏：缺货查询与导出Excel -->
+  <view class="action-bar">
+    <view class="checkbox-wrapper" bindtap="toggleZeroStock">
+      <checkbox checked="{{showZeroStock}}" color="#4CAF50" style="transform: scale(0.8);" />
+      <text>仅显示缺货 (库存为0)</text>
+    </view>
+    <view class="btn-export" bindtap="exportExcel">
+      <text class="export-icon">📊</text>
+      <text>导出Excel</text>
+    </view>
   </view>
 
   <!-- 试剂列表 -->
@@ -17,9 +44,6 @@
       <view class="reagent-item card" wx:for="{{reagentList}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
         <view class="reagent-header">
           <view class="reagent-name">{{item.name}}</view>
-          <view class="tag {{item.isShared ? 'tag-blue' : 'tag-green'}}">
-            {{item.isShared ? '共享' : '私有'}}
-          </view>
         </view>
         <view class="reagent-info">
           <view class="info-item" wx:if="{{item.unit}}">
@@ -37,15 +61,41 @@
         </view>
       </view>
     </view>
+  </view>
 
-    <view wx:else class="empty-state">
-      <text class="empty-text">暂无试剂记录</text>
-      <view class="btn-primary" style="margin-top: 30rpx;" bindtap="goAdd">添加试剂</view>
+    <!-- 添加按钮 -->
+    <view class="float-btn" bindtap="goAdd">
+      <text>+</text>
+    </view>
+  </block>
+
+  <!-- 弹窗：创建/加入试剂库 -->
+  <view class="modal-mask" wx:if="{{showDialog}}">
+    <view class="modal-content">
+      <view class="modal-title">{{dialogType === 'create' ? '创建试剂库' : '加入试剂库'}}</view>
+      <input class="modal-input" placeholder="{{dialogType === 'create' ? '库名称' : '6位邀请码'}}" bindinput="onDialogInput" value="{{dialogInputValue}}" />
+      <view class="modal-btns">
+        <view class="modal-btn cancel" bindtap="closeDialog">取消</view>
+        <view class="modal-btn confirm" bindtap="confirmDialog">确定</view>
+      </view>
     </view>
   </view>
 
-  <!-- 添加按钮 -->
-  <view class="float-btn" bindtap="goAdd">
-    <text>+</text>
+  <!-- 弹窗：成员与邀请码 -->
+  <view class="modal-mask" wx:if="{{showMembersDialog}}">
+    <view class="modal-content members-modal">
+      <view class="modal-title">试剂库成员</view>
+      <view class="invite-code-section" bindtap="copyInviteCode">
+        <text>邀请码：<text class="code-text">{{currentLibrary.inviteCode || '暂无'}}</text></text>
+        <text class="copy-hint">(点击复制)</text>
+      </view>
+      <scroll-view scroll-y class="members-list">
+        <view class="member-item" wx:for="{{membersList}}" wx:key="id">
+          <image class="member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}"></image>
+          <text class="member-name">{{item.nickname || '未命名'}}</text>
+        </view>
+      </scroll-view>
+      <view class="modal-btn confirm full-width" bindtap="closeMembersDialog">关闭</view>
+    </view>
   </view>
 </view>

@@ -8,7 +8,6 @@ Page({
       description: '',
       unit: '',
       stockAmount: '',
-      isShared: false,
       createdAt: ''
     }
   },
@@ -27,7 +26,8 @@ Page({
   },
 
   loadDetail(id) {
-    api.getReagentDetail(id).then(res => {
+    const libraryId = wx.getStorageSync('currentLibraryId');
+    api.getReagentDetail(id, libraryId).then(res => {
       const r = res.data;
       this.setData({
         reagent: {
@@ -35,7 +35,6 @@ Page({
           description: r.description || '',
           unit: r.unit || '',
           stockAmount: r.stockAmount || '',
-          isShared: r.isShared || false,
           createdAt: r.createdAt ? r.createdAt.split('T')[0] : ''
         }
       });
@@ -53,13 +52,14 @@ Page({
   },
 
   deleteReagent() {
+    const libraryId = wx.getStorageSync('currentLibraryId');
     wx.showModal({
       title: '确认删除',
       content: '删除后无法恢复，确定要删除这个试剂吗？',
       confirmColor: '#f44336',
       success: (res) => {
         if (res.confirm) {
-          api.deleteReagent(this.data.id).then(() => {
+          api.deleteReagent(this.data.id, libraryId).then(() => {
             wx.showToast({ title: '已删除', icon: 'success' });
             setTimeout(() => {
               wx.navigateBack();

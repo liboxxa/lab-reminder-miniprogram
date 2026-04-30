@@ -2,9 +2,6 @@
   <view class="card">
     <view class="header">
       <view class="name">{{reagent.name}}</view>
-      <view class="tag {{reagent.isShared ? 'tag-blue' : 'tag-green'}}">
-        {{reagent.isShared ? '共享' : '私有'}}
-      </view>
     </view>
 
     <view class="info-row" wx:if="{{reagent.description}}">

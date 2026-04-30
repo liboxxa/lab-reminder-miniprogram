@@ -63,6 +63,25 @@ function request(options) {
     });
   });
 }
+
+// ==================== 试剂库相关 ====================
+
+function getReagentLibraryList() {
+  return request({ url: '/reagent-libraries', method: 'GET' });
+}
+
+function createReagentLibrary(name) {
+  return request({ url: '/reagent-libraries', method: 'POST', data: { name } });
+}
+
+function joinReagentLibrary(inviteCode) {
+  return request({ url: '/reagent-libraries/join', method: 'POST', data: { inviteCode } });
+}
+
+function getReagentLibraryMembers(id) {
+  return request({ url: `/reagent-libraries/${id}/members`, method: 'GET' });
+}
+
 // ==================== 试剂相关 ====================
 
 function getReagentList(params = {}) {
@@ -73,10 +92,11 @@ function getReagentList(params = {}) {
   });
 }
 
-function getReagentDetail(id) {
+function getReagentDetail(id, libraryId) {
   return request({
     url: `/reagents/${id}`,
-    method: 'GET'
+    method: 'GET',
+    data: { libraryId }
   });
 }
 function updateProfile(data) {
@@ -97,6 +117,11 @@ function createReagent(data) {
 function getExportUrl() {
   return config.baseUrl + '/experiments/export';
 }
+// 导出试剂数据（返回下载 URL）
+function getReagentExportUrl() {
+  return config.baseUrl + '/reagents/export';
+}
+
 function updateReagent(id, data) {
   return request({
     url: `/reagents/${id}`,
@@ -105,10 +130,11 @@ function updateReagent(id, data) {
   });
 }
 
-function deleteReagent(id) {
+function deleteReagent(id, libraryId) {
   return request({
     url: `/reagents/${id}`,
-    method: 'DELETE'
+    method: 'DELETE',
+    data: { libraryId }
   });
 }
 
@@ -402,6 +428,12 @@ function deleteGroup(groupId) {
 // ==================== 导出 ====================
 
 module.exports = {
+  // 试剂库
+  getReagentLibraryList,
+  createReagentLibrary,
+  joinReagentLibrary,
+  getReagentLibraryMembers,
+  
   // 认证
   login,
   getUserInfo,
@@ -449,5 +481,6 @@ module.exports = {
   // ...已有导出
   updateProfile,
   getExportUrl,
+  getReagentExportUrl,
   uploadFile
 };
