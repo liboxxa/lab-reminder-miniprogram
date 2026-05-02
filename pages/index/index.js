@@ -71,8 +71,17 @@ loadData() {
   // 加载今日待办（改成返回 Promise）
   loadTodayTasks() {
     return api.getTodayTasks().then(res => {
+      const list = (res.data || []).slice(0, 20).map(item => ({
+        id: item.id,
+        title: item.title,
+        status: item.status,
+        experimentName: item.experimentName,
+        strainName: item.strainName,
+        time: item.time,
+        experimentId: item.experimentId
+      }));
       this.setData({
-        todayTasks: res.data || []
+        todayTasks: list
       });
     }).catch(err => {
       console.error('获取今日待办失败:', err);
@@ -82,8 +91,14 @@ loadData() {
   // 加载进行中的实验（改成返回 Promise）
   loadOngoingExperiments() {
     return api.getExperimentList({ tab: 'ongoing' }).then(res => {
+      const list = (res.data || []).slice(0, 5).map(item => ({
+        id: item.id,
+        name: item.name,
+        currentDay: item.currentDay,
+        startDate: item.startDate
+      }));
       this.setData({
-        ongoingExperiments: (res.data || []).slice(0, 5)
+        ongoingExperiments: list
       });
     }).catch(err => {
       console.error('获取实验列表失败:', err);

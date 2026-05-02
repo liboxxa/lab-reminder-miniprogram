@@ -4,8 +4,11 @@ const app = getApp();
 Page({
   data: {
     libraryList: [],
+    libraryNameList: [],
     libraryIndex: 0,
-    currentLibrary: null,
+    currentLibraryId: null,
+    currentLibraryName: '',
+    currentLibraryInviteCode: '',
     hasLoadedLibraries: false,
     
     searchKey: '',
@@ -21,18 +24,31 @@ Page({
     membersList: []
   },
 
+  libraryFullList: [],
+
   onLoad() {},
 
   onShow() {
     if (!app.globalData.isLogin) {
-      this.setData({ libraryList: [], hasLoadedLibraries: true, reagentList: [], allReagentList: [] });
+      this.libraryFullList = [];
+      this.setData({
+        libraryList: [],
+        libraryNameList: [],
+        libraryIndex: 0,
+        currentLibraryId: null,
+        currentLibraryName: '',
+        currentLibraryInviteCode: '',
+        hasLoadedLibraries: true,
+        reagentList: [],
+        allReagentList: []
+      });
       return;
     }
     this.loadLibraries();
   },
 
   onPullDownRefresh() {
-    if (this.data.libraryList.length > 0) {
+    if (this.data.libraryList.length > 0 && this.data.currentLibraryId) {
       this.loadReagentList().finally(() => {
         wx.stopPullDownRefresh();
       });
@@ -46,7 +62,17 @@ Page({
   loadLibraries() {
     return api.getReagentLibraryList().then(res => {
       const list = res.data || [];
-      this.setData({ libraryList: list, hasLoadedLibraries: true });
+      this.libraryFullList = list;
+      const nameList = list.map(item => item.name || '未命名');
+      this.setData({
+        libraryList: list.map(item => ({
+          id: item.id,
+          name: item.name,
+          inviteCode: item.inviteCode
+        })),
+        libraryNameList: nameList,
+        hasLoadedLibraries: true
+      });
       if (list.length > 0) {
         let index = 0;
         const cachedId = wx.getStorageSync('currentLibraryId');
@@ -54,8 +80,16 @@ Page({
           const found = list.findIndex(l => l.id == cachedId);
           if (found !== -1) index = found;
         }
-        this.setData({ libraryIndex: index, currentLibrary: list[index] });
-        wx.setStorageSync('currentLibraryId', list[index].id);
+        const current = list[index] || {};
+        this.setData({
+          libraryIndex: index,
+          currentLibraryId: current.id || null,
+          currentLibraryName: current.name || '',
+          currentLibraryInviteCode: current.inviteCode || ''
+        });
+        if (current.id) {
+          wx.setStorageSync('currentLibraryId', current.id);
+        }
         this.loadReagentList();
       }
     }).catch(err => {
@@ -65,21 +99,29 @@ Page({
 
   onLibraryChange(e) {
     const index = e.detail.value;
-    const lib = this.data.libraryList[index];
-    this.setData({ libraryIndex: index, currentLibrary: lib });
-    wx.setStorageSync('currentLibraryId', lib.id);
+    const lib = this.libraryFullList[index] || {};
+    this.setData({
+      libraryIndex: index,
+      currentLibraryId: lib.id || null,
+      currentLibraryName: lib.name || '',
+      currentLibraryInviteCode: lib.inviteCode || ''
+    });
+    if (lib.id) {
+      wx.setStorageSync('currentLibraryId', lib.id);
+    }
     this.loadReagentList();
   },
 
   loadReagentList() {
-    if (!this.data.currentLibrary) return Promise.resolve();
+    if (!this.data.currentLibraryId) return Promise.resolve();
 
     return api.getReagentList({
-      libraryId: this.data.currentLibrary.id,
+      libraryId: this.data.currentLibraryId,
       keyword: this.data.searchKey
     }).then(res => {
+      const list = res.data || [];
       this.setData({
-        allReagentList: res.data || []
+        allReagentList: list
       });
       this.filterList();
     }).catch(err => {
@@ -101,11 +143,11 @@ Page({
   },
 
   exportExcel() {
-    if (!this.data.currentLibrary) return;
+    if (!this.data.currentLibraryId) return;
     wx.showLoading({ title: '正在生成文件...' });
     
     const token = wx.getStorageSync('token') || '';
-    const url = api.getReagentExportUrl() + '?libraryId=' + this.data.currentLibrary.id;
+    const url = api.getReagentExportUrl() + '?libraryId=' + this.data.currentLibraryId;
     
     wx.downloadFile({
       url: url + '&token=' + token, // 同时在URL和Header里带上token
@@ -152,6 +194,61 @@ Page({
     });
   },
 
+  showImportTip() {
+    if (!this.data.currentLibraryId) {
+      wx.showToast({ title: '请先选择试剂库', icon: 'none' });
+      return;
+    }
+    wx.showModal({
+      title: '批量导入说明',
+      content: '请上传Excel文件，包含以下列：name（必填）、unit（可选）、stockAmount（可选）、description（可选）。',
+      confirmText: '选择文件',
+      success: (res) => {
+        if (res.confirm) {
+          this.chooseImportFile();
+        }
+      }
+    });
+  },
+
+  chooseImportFile() {
+    wx.chooseMessageFile({
+      count: 1,
+      type: 'file',
+      success: (res) => {
+        const file = res.tempFiles && res.tempFiles[0];
+        if (!file) return;
+        this.importReagentsFile(file.path);
+      },
+      fail: () => {
+        wx.showToast({ title: '选择文件失败', icon: 'none' });
+      }
+    });
+  },
+
+  importReagentsFile(filePath) {
+    wx.showLoading({ title: '导入中...' });
+    api.importReagents(filePath, this.data.currentLibraryId).then(() => {
+      wx.hideLoading();
+      wx.showToast({ title: '导入成功', icon: 'success' });
+      this.loadReagentList();
+    }).catch(err => {
+      wx.hideLoading();
+      console.error('导入失败:', err);
+      wx.showToast({ title: '导入失败', icon: 'none' });
+    });
+  },
+
+  goActions() {
+    if (!this.data.currentLibraryId) {
+      wx.showToast({ title: '请先选择试剂库', icon: 'none' });
+      return;
+    }
+    wx.navigateTo({
+      url: `/pages/reagent/actions/actions?libraryId=${this.data.currentLibraryId}`
+    });
+  },
+
   onSearch(e) {
     this.setData({ searchKey: e.detail.value });
     this.loadReagentList();
@@ -169,8 +266,9 @@ Page({
       wx.navigateTo({ url: '/pages/login/login' });
       return;
     }
+    if (!this.data.currentLibraryId) return;
     wx.navigateTo({
-      url: `/pages/reagent/add/add?libraryId=${this.data.currentLibrary.id}`
+      url: `/pages/reagent/add/add?libraryId=${this.data.currentLibraryId}`
     });
   },
 
@@ -208,9 +306,9 @@ Page({
   },
 
   showMembers() {
-    if (!this.data.currentLibrary) return;
+    if (!this.data.currentLibraryId) return;
     this.setData({ showMembersDialog: true, membersList: [] });
-    api.getReagentLibraryMembers(this.data.currentLibrary.id).then(res => {
+    api.getReagentLibraryMembers(this.data.currentLibraryId).then(res => {
       this.setData({ membersList: res.data || [] });
     });
   },
@@ -220,9 +318,9 @@ Page({
   },
 
   copyInviteCode() {
-    if (!this.data.currentLibrary || !this.data.currentLibrary.inviteCode) return;
+    if (!this.data.currentLibraryInviteCode) return;
     wx.setClipboardData({
-      data: this.data.currentLibrary.inviteCode,
+      data: this.data.currentLibraryInviteCode,
       success: () => wx.showToast({ title: '邀请码已复制' })
     });
   }

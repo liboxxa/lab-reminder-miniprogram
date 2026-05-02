@@ -4,6 +4,7 @@
     "pages/strain/strain",
     "pages/experiment/experiment",
     "pages/reagent/reagent",
+    "pages/reagent/actions/actions",
   "pages/reagent/add/add",
   "pages/reagent/detail/detail",
     "pages/mine/mine",

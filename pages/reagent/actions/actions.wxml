@@ -1,0 +1,61 @@
+<view class="container">
+  <view class="card">
+    <view class="form-item">
+      <view class="form-label">试剂库</view>
+      <picker range="{{libraryNameList}}" value="{{libraryIndex}}" bindchange="onLibraryChange">
+        <view class="picker-value">
+          {{currentLibraryName || '请选择试剂库'}} ›
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">操作类型</view>
+      <picker range="{{actionLabelList}}" value="{{actionIndex}}" bindchange="onActionChange">
+        <view class="picker-value">
+          {{actionLabelList[actionIndex] || '全部'}} ›
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">试剂名称</view>
+      <input class="form-input" placeholder="可选，精确匹配" bindinput="onReagentNameInput" value="{{reagentName}}" />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">实验名称</view>
+      <input class="form-input" placeholder="可选" bindinput="onExperimentInput" value="{{experimentId}}" />
+    </view>
+
+    <view class="form-item row">
+      <view class="btn-secondary" bindtap="loadActions">查询</view>
+      <view class="btn-secondary" bindtap="exportActions">导出</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">操作记录 ({{actions.length}})</view>
+    <view wx:if="{{actions.length > 0}}">
+      <view class="action-item" wx:for="{{actions}}" wx:key="id">
+        <view class="action-header">
+          <view class="action-name">{{item.reagentName || item.name}}</view>
+          <view class="action-type">{{item.action}}</view>
+        </view>
+        <view class="action-meta">
+          <text>用量/数量：{{item.amount}}{{item.unit || ''}}</text>
+          <text>库存：{{item.beforeStock}} → {{item.afterStock}}</text>
+        </view>
+        <view class="action-meta">
+          <text wx:if="{{item.libraryName}}">库：{{item.libraryName}}</text>
+          <text wx:if="{{item.experimentId}}">实验：{{item.experimentId}}</text>
+          <text wx:if="{{item.userName}}">用户：{{item.userName}}</text>
+        </view>
+        <view class="action-time">时间：{{item.createdAt}}</view>
+      </view>
+    </view>
+    <view wx:else class="empty-state">
+      <text class="empty-text">暂无操作记录</text>
+    </view>
+  </view>
+</view>

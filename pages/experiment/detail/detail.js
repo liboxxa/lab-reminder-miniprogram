@@ -86,34 +86,145 @@ Page({
 
   // 执行完成任务
   doCompleteTask(item, localImages) {
+    const reagentUsages = this.buildReagentUsagesFromTask(item);
+    if (reagentUsages === null) return;
     wx.showLoading({ title: '处理中...' });
 
-    // 1. 上传图片
-    const uploadPromises = localImages.map(img => {
-      return api.uploadFile(img).then(res => {
-        let url = res.url;
-        if (url.startsWith('/')) {
-           url = 'https://aixlab.online' + url;
-        }
-        return url;
+    // 先尝试用试剂名从试剂库查找并填充 reagentId，同时把 amount 转为数字
+    this.enrichReagentUsages(reagentUsages).then(enrichedUsages => {
+      // 1. 上传图片
+      const uploadPromises = localImages.map(img => {
+        return api.uploadFile(img).then(res => {
+          let url = res.url;
+          if (url.startsWith('/')) {
+             url = 'https://aixlab.online' + url;
+          }
+          return url;
+        });
       });
-    });
 
-    Promise.all(uploadPromises).then(uploadedUrls => {
-      // 2. 调用完成接口
-      api.updateReminderStatus(this.data.experimentId, item.id, {
-        status: 'done',
-        content: '完成任务',
-        images: uploadedUrls
-      }).then(() => {
+      Promise.all(uploadPromises).then(uploadedUrls => {
+        // 2. 调用完成接口
+        const payload = {
+          status: 'done',
+          content: '完成任务',
+          images: uploadedUrls,
+          reagentUsages: enrichedUsages
+        };
+        console.log('📤 完成步骤请求体:', payload);
+        api.updateReminderStatus(this.data.experimentId, item.id, payload).then(() => {
+          wx.hideLoading();
+          wx.showToast({ title: '已完成', icon: 'success' });
+          this.loadExperimentDetail(this.data.experimentId);
+        }).catch(err => {
+          wx.hideLoading();
+          console.error('完成任务失败:', err);
+          wx.showToast({ title: '完成失败', icon: 'none' });
+        });
+      }).catch(err => {
         wx.hideLoading();
-        wx.showToast({ title: '已完成', icon: 'success' });
-        this.loadExperimentDetail(this.data.experimentId);
+        console.error('上传失败:', err);
       });
     }).catch(err => {
       wx.hideLoading();
-      console.error('上传失败:', err);
+      console.error('准备试剂数据失败:', err);
+      wx.showToast({ title: '试剂匹配失败', icon: 'none' });
     });
+  },
+
+  // 为 reagentUsages 填充 reagentId（若能匹配），并把 amount 转为数字
+  enrichReagentUsages(usages) {
+    if (!Array.isArray(usages) || usages.length === 0) return Promise.resolve([]);
+    const libraryId = wx.getStorageSync('currentLibraryId') || usages[0].libraryId || null;
+    // 如果没有库 id，直接返回，并尽量把 amount 转为数字
+    if (!libraryId) {
+      return Promise.resolve(usages.map(u => ({
+        ...u,
+        amount: u.amount ? Number(u.amount) : 0
+      })));
+    }
+
+    const promises = usages.map(u => {
+      // 如果已包含 reagentId，直接使用
+      if (u.reagentId) {
+        return Promise.resolve({ ...u, amount: u.amount ? Number(u.amount) : 0 });
+      }
+
+      // 尝试按名字去查询试剂（后端 /reagents 支持按 name 或关键字过滤）
+      return api.getReagentList({ libraryId, name: u.reagentName }).then(res => {
+        const list = res.data || [];
+        if (Array.isArray(list) && list.length > 0) {
+          // 取第一个最接近的匹配
+          const found = list[0];
+          return {
+            ...u,
+            reagentId: found.id || found._id || null,
+            amount: u.amount ? Number(u.amount) : 0
+          };
+        }
+        // 未找到，仍返回但 amount 转为数字
+        return { ...u, amount: u.amount ? Number(u.amount) : 0 };
+      }).catch(() => {
+        return { ...u, amount: u.amount ? Number(u.amount) : 0 };
+      });
+    });
+
+    return Promise.all(promises);
+  },
+
+  buildReagentUsagesFromTask(item) {
+    const reagentText = this.extractReagentText(item && item.content);
+    console.log('🧪 提取的试剂文本:', reagentText);
+    if (!reagentText) {
+      console.log('❌ 任务内容中没有找到试剂信息');
+      return [];
+    }
+    const parts = this.parseReagentText(reagentText);
+    console.log('🧪 解析的试剂部分:', parts);
+    const invalid = parts.find(p => !p.name || !p.amount || !p.unit);
+    if (invalid) {
+      console.log('❌ 试剂信息不完整:', invalid);
+      wx.showToast({ title: '请补全试剂名称和用量（含单位）', icon: 'none' });
+      return null;
+    }
+
+    const libraryId = wx.getStorageSync('currentLibraryId');
+    console.log('📚 当前试剂库ID:', libraryId);
+    const reagentUsages = parts.map(p => ({
+      libraryId: libraryId || null,
+      reagentName: p.name,
+      unit: p.unit,
+      amount: p.amount,
+      source: 'text'
+    }));
+    console.log('📤 构建的试剂使用数据:', reagentUsages);
+    return reagentUsages;
+  },
+
+  extractReagentText(content) {
+    if (!content) return '';
+    const marker = '试剂：';
+    const idx = content.indexOf(marker);
+    if (idx === -1) return '';
+    return content.slice(idx + marker.length).trim();
+  },
+
+  parseReagentText(text) {
+    const items = [];
+    const parts = text.split(/[；;\n]/).map(t => t.trim()).filter(Boolean);
+    parts.forEach(part => {
+      const match = part.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*([a-zA-Z\u4e00-\u9fa5]+)?$/);
+      if (match) {
+        items.push({
+          name: match[1].trim(),
+          amount: match[2],
+          unit: match[3] || ''
+        });
+      } else {
+        items.push({ name: part.trim(), amount: '', unit: '' });
+      }
+    });
+    return items;
   },
 
   // 跳过任务

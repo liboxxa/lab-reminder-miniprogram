@@ -1,9 +1,9 @@
 <view class="container">
   <!-- 试剂库切换栏 -->
   <view class="library-header" wx:if="{{libraryList.length > 0}}">
-    <picker bindchange="onLibraryChange" value="{{libraryIndex}}" range="{{libraryList}}" range-key="name">
+    <picker bindchange="onLibraryChange" value="{{libraryIndex}}" range="{{libraryNameList}}">
       <view class="library-picker">
-        <text class="library-name">🧪 {{currentLibrary.name || '选择试剂库'}} ▾</text>
+        <text class="library-name">🧪 {{currentLibraryName || '选择试剂库'}} ▾</text>
       </view>
     </picker>
     <view class="library-actions">
@@ -32,9 +32,19 @@
       <checkbox checked="{{showZeroStock}}" color="#4CAF50" style="transform: scale(0.8);" />
       <text>仅显示缺货 (库存为0)</text>
     </view>
-    <view class="btn-export" bindtap="exportExcel">
-      <text class="export-icon">📊</text>
-      <text>导出Excel</text>
+    <view class="action-bar-right">
+      <view class="btn-export" bindtap="showImportTip">
+        <text class="export-icon">📥</text>
+        <text>批量导入</text>
+      </view>
+      <view class="btn-export" bindtap="goActions">
+        <text class="export-icon">🧾</text>
+        <text>操作记录</text>
+      </view>
+      <view class="btn-export" bindtap="exportExcel">
+        <text class="export-icon">📊</text>
+        <text>导出Excel</text>
+      </view>
     </view>
   </view>
 
@@ -61,6 +71,10 @@
         </view>
       </view>
     </view>
+
+    <view wx:else class="empty-state">
+      <text class="empty-text">暂无试剂记录</text>
+    </view>
   </view>
 
     <!-- 添加按钮 -->
@@ -86,7 +100,7 @@
     <view class="modal-content members-modal">
       <view class="modal-title">试剂库成员</view>
       <view class="invite-code-section" bindtap="copyInviteCode">
-        <text>邀请码：<text class="code-text">{{currentLibrary.inviteCode || '暂无'}}</text></text>
+        <text>邀请码：<text class="code-text">{{currentLibraryInviteCode || '暂无'}}</text></text>
         <text class="copy-hint">(点击复制)</text>
       </view>
       <scroll-view scroll-y class="members-list">

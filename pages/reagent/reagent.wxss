@@ -148,6 +148,11 @@
   border-bottom: 1rpx solid #f0f0f0;
 }
 
+.action-bar-right {
+  display: flex;
+  gap: 12rpx;
+}
+
 .checkbox-wrapper {
   display: flex;
   align-items: center;

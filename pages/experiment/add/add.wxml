@@ -150,6 +150,9 @@
           </view>
           <view class="step-body">
             <view class="step-name">{{item.name}}</view>
+            <view class="step-library" wx:if="{{item.reagentLibraryName}}">
+              试剂库：{{item.reagentLibraryName}}
+            </view>
             <view class="step-time">
               {{item.dayType === 'day'
                   ? '第 ' + item.dayNum + ' 天'
@@ -273,6 +276,20 @@
       />
     </view>
 
+    <!-- 选择试剂库 -->
+    <view class="form-item">
+      <view class="form-label">试剂库</view>
+      <picker
+        range="{{libraryNameList}}"
+        value="{{stepLibraryIndex}}"
+        bindchange="onStepLibraryChange"
+      >
+        <view class="picker-value">
+          {{editingStep.reagentLibraryName || '请选择试剂库'}} ›
+        </view>
+      </picker>
+    </view>
+
     <!-- 从试剂库选择 -->
     <view class="form-item row">
       <view class="form-label">从试剂库选择</view>
@@ -333,3 +350,4 @@
     <button class="modal-btn confirm" bindtap="confirmReagentSelection">确定</button>
   </view>
 </view>
+

@@ -9,7 +9,7 @@ function getToken() {
 function request(options) {
   return new Promise((resolve, reject) => {
     const token = getToken();
-    
+    //console.log('发起请求:', options.method || 'GET', options.url, options.data || {});
     wx.request({
       url: config.baseUrl + options.url,
       method: options.method || 'GET',
@@ -22,15 +22,24 @@ function request(options) {
         if (res.statusCode === 200) {
           if (res.data.code === 0) {
             resolve(res.data);
-          } else {
-            // 业务错误
-            wx.showToast({
-              title: res.data.message || '请求失败',
-              icon: 'none'
-            });
-            reject(res.data);
+            return;
           }
-        } else if (res.statusCode === 401) {
+          // 业务错误
+          wx.showToast({
+            title: res.data.message || '请求失败',
+            icon: 'none'
+          });
+          reject(res.data);
+          return;
+        }
+
+        if (res.statusCode === 409) {
+          // 库存不足/试剂缺失等冲突
+          reject({ statusCode: 409, data: res.data });
+          return;
+        }
+
+        if (res.statusCode === 401) {
           // 未登录或token过期
           wx.removeStorageSync('token');
           wx.removeStorageSync('userInfo');
@@ -44,13 +53,14 @@ function request(options) {
             });
           }, 1500);
           reject(res.data);
-        } else {
-          wx.showToast({
-            title: res.data.message || '请求失败',
-            icon: 'none'
-          });
-          reject(res.data);
+          return;
         }
+
+        wx.showToast({
+          title: res.data.message || '请求失败',
+          icon: 'none'
+        });
+        reject(res.data);
       },
       fail: (err) => {
         console.error('请求失败:', err);
@@ -135,6 +145,52 @@ function deleteReagent(id, libraryId) {
     url: `/reagents/${id}`,
     method: 'DELETE',
     data: { libraryId }
+  });
+}
+
+// 试剂操作记录
+function getReagentActions(params = {}) {
+  return request({
+    url: '/reagents/actions',
+    method: 'GET',
+    data: params
+  });
+}
+
+function getReagentActionsExportUrl() {
+  return config.baseUrl + '/reagents/actions/export';
+}
+
+// 批量导入试剂（Excel）
+function importReagents(filePath, libraryId) {
+  return new Promise((resolve, reject) => {
+    const token = getToken();
+    wx.uploadFile({
+      url: config.baseUrl + '/reagents/import',
+      filePath: filePath,
+      name: 'file',
+      formData: { libraryId },
+      header: {
+        'Authorization': token ? `Bearer ${token}` : ''
+      },
+      success(res) {
+        if (res.statusCode === 200) {
+          try {
+            const data = JSON.parse(res.data);
+            if (data.code === 0) {
+              resolve(data);
+            } else {
+              reject(data);
+            }
+          } catch (err) {
+            reject(err);
+          }
+        } else {
+          reject(res);
+        }
+      },
+      fail: reject
+    });
   });
 }
 
@@ -478,6 +534,9 @@ module.exports = {
   createReagent,
   updateReagent,
   deleteReagent,
+  getReagentActions,
+  getReagentActionsExportUrl,
+  importReagents,
   // ...已有导出
   updateProfile,
   getExportUrl,

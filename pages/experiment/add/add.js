@@ -39,19 +39,54 @@ Page({
     // 试剂选择弹窗
     showReagentSelector: false,
     reagentList: [],
-    selectedReagentMap: {} // { [id]: {id,name,unit,amount} }
+    selectedReagentMap: {}, // { [id]: {id,name,unit,amount,stockAmount} }
+
+    // 试剂库
+    libraryList: [],
+    libraryNameList: [],
+    libraryIndex: 0,
+    currentLibraryId: null,
+    currentLibraryName: '',
+    stepLibraryIndex: 0
   },
+
+  reagentCache: {},
 
   onLoad(options) {
     this.initStartDate();
     this.loadTemplates();
-    this.loadReagents && this.loadReagents();
+    this.loadLibraries();
     this.loadGroupList();   // 新增：加载我的团队列表
     if (options.templateId) {
       this.setData({
         'formData.templateId': options.templateId
       });
     }
+  },
+
+  loadLibraries() {
+    if (!app.globalData.isLogin) return;
+    api.getReagentLibraryList().then(res => {
+      const list = res.data || [];
+      const nameList = list.map(item => item.name || '未命名');
+      let index = 0;
+      const cachedId = wx.getStorageSync('currentLibraryId');
+      if (cachedId) {
+        const found = list.findIndex(l => l.id == cachedId);
+        if (found !== -1) index = found;
+      }
+      const current = list[index] || {};
+      this.setData({
+        libraryList: list.map(item => ({ id: item.id, name: item.name })),
+        libraryNameList: nameList,
+        libraryIndex: index,
+        currentLibraryId: current.id || null,
+        currentLibraryName: current.name || '',
+        stepLibraryIndex: index
+      });
+    }).catch(err => {
+      console.error('获取试剂库列表失败:', err);
+    });
   },
   loadGroupList() {
     if (!app.globalData.isLogin) return;
@@ -219,6 +254,7 @@ Page({
 
   // 打开步骤编辑弹窗（新增）
   openStepModal() {
+    const { libraryIndex, currentLibraryId, currentLibraryName } = this.data;
     this.setData({
       showStepModal: true,
       editingStepIndex: -1,
@@ -228,8 +264,11 @@ Page({
         dayNum: '',
         time: '09:00',
         reagentText: '',
-        reagents: []
-      }
+        reagents: [],
+        reagentLibraryId: currentLibraryId,
+        reagentLibraryName: currentLibraryName
+      },
+      stepLibraryIndex: libraryIndex
     });
   },
 
@@ -237,6 +276,9 @@ Page({
   editStep(e) {
     const index = e.currentTarget.dataset.index;
     const step = this.data.steps[index];
+    const list = this.data.libraryList || [];
+    const stepLibId = step.reagentLibraryId || this.data.currentLibraryId;
+    const libIndex = stepLibId ? list.findIndex(l => l.id == stepLibId) : this.data.libraryIndex;
     this.setData({
       showStepModal: true,
       editingStepIndex: index,
@@ -246,8 +288,11 @@ Page({
         dayNum: String(step.dayNum),
         time: step.time || '09:00',
         reagentText: step.reagentText || '',
-        reagents: step.reagents || []
-      }
+        reagents: step.reagents || [],
+        reagentLibraryId: step.reagentLibraryId || this.data.currentLibraryId,
+        reagentLibraryName: step.reagentLibraryName || this.data.currentLibraryName
+      },
+      stepLibraryIndex: libIndex >= 0 ? libIndex : this.data.libraryIndex
     });
   },
 
@@ -293,6 +338,30 @@ Page({
     });
   },
 
+  onStepLibraryChange(e) {
+    const index = parseInt(e.detail.value, 10);
+    const lib = (this.data.libraryList || [])[index] || {};
+    this.setData({
+      stepLibraryIndex: index,
+      'editingStep.reagentLibraryId': lib.id || null,
+      'editingStep.reagentLibraryName': lib.name || '',
+      reagentList: [],
+      selectedReagentMap: {}
+    });
+  },
+
+  loadReagentsByLibrary(libraryId) {
+    if (!libraryId) return Promise.resolve([]);
+    if (this.reagentCache[libraryId]) {
+      return Promise.resolve(this.reagentCache[libraryId]);
+    }
+    return api.getReagentList({ libraryId }).then(res => {
+      const list = res.data || [];
+      this.reagentCache[libraryId] = list;
+      return list;
+    });
+  },
+
   // 打开试剂选择弹窗
   openReagentSelector() {
     if (!app.globalData.isLogin) {
@@ -300,26 +369,25 @@ Page({
       return;
     }
 
+    const libraryId = this.data.editingStep.reagentLibraryId || this.data.currentLibraryId;
+    if (!libraryId) {
+      wx.showToast({ title: '请先选择试剂库', icon: 'none' });
+      return;
+    }
+
     // 从当前步骤初始化 map
     const selectedReagentMap = this.buildReagentMapFromStep(this.data.editingStep);
 
-    if (!this.data.reagentList.length) {
-      api.getReagentList({ tab: 'all' }).then(res => {
-        this.setData({
-          reagentList: res.data || [],
-          selectedReagentMap,
-          showReagentSelector: true
-        });
-      }).catch(err => {
-        console.error('获取试剂列表失败:', err);
-        wx.showToast({ title: '获取试剂列表失败', icon: 'none' });
-      });
-    } else {
+    this.loadReagentsByLibrary(libraryId).then(list => {
       this.setData({
+        reagentList: list,
         selectedReagentMap,
         showReagentSelector: true
       });
-    }
+    }).catch(err => {
+      console.error('获取试剂列表失败:', err);
+      wx.showToast({ title: '获取试剂列表失败', icon: 'none' });
+    });
   },
 
   buildReagentMapFromStep(step) {
@@ -359,7 +427,8 @@ Page({
             id: r.id,
             name: r.name,
             unit: r.unit || '',
-            amount: ''
+            amount: '',
+            stockAmount: r.stockAmount
           };
         }
       }
@@ -382,7 +451,8 @@ Page({
           id: r.id,
           name: r.name,
           unit: r.unit || '',
-          amount: value
+          amount: value,
+          stockAmount: r.stockAmount
         };
       }
     } else {
@@ -408,6 +478,8 @@ Page({
 
     this.setData({
       'editingStep.reagents': list,
+      'editingStep.reagentLibraryId': this.data.editingStep.reagentLibraryId || this.data.currentLibraryId,
+      'editingStep.reagentLibraryName': this.data.editingStep.reagentLibraryName || this.data.currentLibraryName,
       'editingStep.reagentText': reagentText,
       showReagentSelector: false
     });
@@ -442,7 +514,9 @@ Page({
       dayNum: parseInt(s.dayNum, 10),
       time: s.dayType === 'day' ? (s.time || '09:00') : '',
       reagentText,
-      reagents
+      reagents,
+      reagentLibraryId: s.reagentLibraryId || this.data.currentLibraryId,
+      reagentLibraryName: s.reagentLibraryName || this.data.currentLibraryName
     };
 
     const steps = this.data.steps.slice();
@@ -488,37 +562,42 @@ Page({
         content: '还没有添加任何实验步骤，确定要继续吗？',
         success: (res) => {
           if (res.confirm) {
-            this.subscribeAndSubmit();
+            if (this.validateReagentInputs()) {
+              this.subscribeAndSubmit();
+            }
           }
         }
       });
     } else {
-      this.subscribeAndSubmit();
+      if (this.validateReagentInputs()) {
+        this.subscribeAndSubmit();
+      }
     }
   },
-// 先请求订阅授权，再真正提交创建实验
-subscribeAndSubmit() {
-  // 如果没配置模板 ID，就直接走提交，避免报错
-  if (!SUBSCRIBE_TEMPLATE_ID) {
-    this.doSubmit();
-    return;
-  }
 
-  wx.requestSubscribeMessage({
-    tmplIds: [SUBSCRIBE_TEMPLATE_ID],
-    success: (res) => {
-      // 打印授权结果，看用户是 accept / reject / ban
-      console.log('订阅消息授权结果:', res);
-      // 无论同意还是拒绝，都继续创建实验（只是后端能不能推送的问题）
+  // 先请求订阅授权，再真正提交创建实验
+  subscribeAndSubmit() {
+    // 如果没配置模板 ID，就直接走提交，避免报错
+    if (!SUBSCRIBE_TEMPLATE_ID) {
       this.doSubmit();
-    },
-    fail: (err) => {
-      console.error('订阅消息授权失败:', err);
-      // 授权失败也继续创建实验，避免阻塞正常流程
-      this.doSubmit();
+      return;
     }
-  });
-},
+
+    wx.requestSubscribeMessage({
+      tmplIds: [SUBSCRIBE_TEMPLATE_ID],
+      success: (res) => {
+        // 打印授权结果，看用户是 accept / reject / ban
+        console.log('订阅消息授权结果:', res);
+        // 无论同意还是拒绝，都继续创建实验（只是后端能不能推送的问题）
+        this.doSubmit();
+      },
+      fail: (err) => {
+        console.error('订阅消息授权失败:', err);
+        // 授权失败也继续创建实验，避免阻塞正常流程
+        this.doSubmit();
+      }
+    });
+  },
   // 真正提交创建实验 + 可选保存为模板
   doSubmit() {
     const { formData, steps, saveAsTemplate, templateName } = this.data;
@@ -547,7 +626,8 @@ subscribeAndSubmit() {
       strainIds: [],           // 省略选择菌种这一步
       reminders,
       isShared: formData.isShared,
-      groupId: formData.groupId
+      groupId: formData.groupId,
+      reagentUsages: this.buildReagentUsages()
     };
 
     console.log('📤 提交创建实验:', submitData);
@@ -574,6 +654,113 @@ subscribeAndSubmit() {
     }).catch(err => {
       wx.hideLoading();
       console.error('创建实验失败:', err);
+      if (err && err.message) {
+        wx.showToast({ title: err.message, icon: 'none' });
+      }
     });
+  },
+
+  validateReagentInputs() {
+    const steps = this.data.steps || [];
+    for (let i = 0; i < steps.length; i += 1) {
+      const step = steps[i];
+      if (Array.isArray(step.reagents) && step.reagents.length > 0) {
+        for (let j = 0; j < step.reagents.length; j += 1) {
+          const r = step.reagents[j];
+          if (!r.name || !String(r.name).trim()) {
+            wx.showToast({ title: '请填写试剂名称', icon: 'none' });
+            return false;
+          }
+          if (!r.amount || !String(r.amount).trim() || !r.unit || !String(r.unit).trim()) {
+            wx.showToast({ title: '请填写试剂用量（含单位）', icon: 'none' });
+            return false;
+          }
+        }
+      }
+
+      if (step.reagentText) {
+        const items = this.parseReagentText(step.reagentText);
+        for (let k = 0; k < items.length; k += 1) {
+          const item = items[k];
+          if (!item.name) {
+            wx.showToast({ title: '请填写试剂名称', icon: 'none' });
+            return false;
+          }
+          if (!item.amount || !item.unit) {
+            wx.showToast({ title: '请填写试剂用量（含单位）', icon: 'none' });
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  },
+
+  buildReagentUsages() {
+    const usages = [];
+    const steps = this.data.steps || [];
+    
+    steps.forEach((step, index) => {
+      const libraryId = step.reagentLibraryId 
+        || this.data.currentLibraryId 
+        || wx.getStorageSync('currentLibraryId');
+  
+      // ✅ 优先用 reagents（从选择器选的，有 reagentId）
+      if (Array.isArray(step.reagents) && step.reagents.length > 0) {
+        step.reagents.forEach(r => {
+          usages.push({
+            libraryId: libraryId || null,
+            reagentId: r.id,
+            reagentName: r.name,
+            unit: r.unit || '',
+            amount: r.amount || '',
+            stepIndex: index,
+            stepName: step.name,
+            source: 'picker'
+          });
+        });
+        // ✅ 有 reagents 就不再处理 reagentText，避免重复
+        return;
+      }
+  
+      // ✅ 没有 reagents 时才解析 reagentText
+      if (step.reagentText) {
+        const items = this.parseReagentText(step.reagentText);
+        items.forEach(item => {
+          if (!item.name) return;
+          usages.push({
+            libraryId: libraryId || null,
+            reagentName: item.name,
+            unit: item.unit || '',
+            amount: item.amount || '',
+            stepIndex: index,
+            stepName: step.name,
+            source: 'text'
+          });
+        });
+      }
+    });
+  
+    console.log('📦 buildReagentUsages 结果:', JSON.stringify(usages, null, 2));
+    return usages;
+  },
+
+  parseReagentText(text) {
+    const items = [];
+    const parts = text.split(/[；;\n]/).map(t => t.trim()).filter(Boolean);
+    parts.forEach(part => {
+      const match = part.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*([a-zA-Z\u4e00-\u9fa5]+)?$/);
+      if (match) {
+        items.push({
+          name: match[1].trim(),
+          amount: match[2],
+          unit: match[3] || ''
+        });
+      } else {
+        items.push({ name: part.trim(), amount: '', unit: '' });
+      }
+    });
+    return items;
   }
 });
