@@ -25,7 +25,7 @@
 
     <view class="form-item">
       <view class="form-label">实验名称</view>
-      <input class="form-input" placeholder="可选" bindinput="onExperimentInput" value="{{experimentId}}" />
+      <input class="form-input" placeholder="可选" bindinput="onExperimentInput" value="{{experimentName}}" />
     </view>
 
     <view class="form-item row">
@@ -48,7 +48,7 @@
         </view>
         <view class="action-meta">
           <text wx:if="{{item.libraryName}}">库：{{item.libraryName}}</text>
-          <text wx:if="{{item.experimentId}}">实验：{{item.experimentId}}</text>
+          <text wx:if="{{item.experimentName}}">实验：{{item.experimentName}}</text>
           <text wx:if="{{item.userName}}">用户：{{item.userName}}</text>
         </view>
         <view class="action-time">时间：{{item.createdAt}}</view>

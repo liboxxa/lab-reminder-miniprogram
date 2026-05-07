@@ -282,7 +282,7 @@ Page({
   showAbout() {
     wx.showModal({
       title: '实验提醒助手',
-      content: '版本 1.3.4\n帮助科研人员管理实验进程\n\n开发：实验室团队',
+      content: '版本 1.3.5\n帮助科研人员管理实验进程\n\n开发：实验室团队',
       showCancel: false
     });
   },

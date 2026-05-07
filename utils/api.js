@@ -10,13 +10,17 @@ function request(options) {
   return new Promise((resolve, reject) => {
     const token = getToken();
     //console.log('发起请求:', options.method || 'GET', options.url, options.data || {});
+    let url = config.baseUrl + options.url;
+    const cache_buster = `_cb=${Date.now()}_${Math.random()}`;
+    url += (url.indexOf('?') > -1 ? '&' : '?') + cache_buster;
     wx.request({
       url: config.baseUrl + options.url,
       method: options.method || 'GET',
       data: options.data || {},
       header: {
         'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
+        'Authorization': token ? `Bearer ${token}` : '',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',  // ✅ 加这个
       },
       success: (res) => {
         if (res.statusCode === 200) {
@@ -149,11 +153,12 @@ function deleteReagent(id, libraryId) {
 }
 
 // 试剂操作记录
+// api.js - getReagentActions 改回干净的写法
 function getReagentActions(params = {}) {
   return request({
     url: '/reagents/actions',
     method: 'GET',
-    data: params
+    data: params  // _t 由调用方的 buildQuery() 传入
   });
 }
 

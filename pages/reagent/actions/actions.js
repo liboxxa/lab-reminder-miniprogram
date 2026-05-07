@@ -78,15 +78,27 @@ Page({
   },
 
   // 构建筛选参数（核心：实验名称筛选）
-  buildQuery() {
-    const action = this.data.actionOptions[this.data.actionIndex];
-    return {
-      libraryId: this.data.currentLibraryId,
-      action: action || undefined,
-      reagentName: this.data.reagentName.trim() || undefined,
-      experimentName: this.data.experimentName.trim() || undefined
-    };
-  },
+  // 构建筛选参数
+buildQuery() {
+  const params = {
+    libraryId: this.data.currentLibraryId,
+    _t: Date.now()
+  };
+
+  // 操作类型：index=0是"全部"，对应空字符串，不传
+  const action = this.data.actionOptions[this.data.actionIndex];
+  if (action) params.action = action;
+
+  // 试剂名称
+  const reagentName = this.data.reagentName.trim();
+  if (reagentName) params.reagentName = reagentName;
+
+  // 实验名称
+  const experimentName = this.data.experimentName.trim();
+  if (experimentName) params.experimentName = experimentName;
+
+  return params;
+},
 
   // ✅ 优化加载方法：点击查询强制清空旧数据，重新请求
   loadActions() {
